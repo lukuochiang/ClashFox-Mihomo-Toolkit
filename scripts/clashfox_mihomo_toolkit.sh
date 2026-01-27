@@ -36,7 +36,7 @@ SCRIPT_VERSION="v1.2.1(18)"
 # ClashFox 目录
 CLASHFOX_DIR="/Applications/ClashFox"
 # ClashFox 内核目录
-CLASHFOX_CORE_DIR="$CLASHFOX_DIR/bin"
+CLASHFOX_CORE_DIR="$CLASHFOX_DIR/core"
 # ClashFox 默认配置文件路径
 CLASHFOX_CONFIG_DIR="$CLASHFOX_DIR/config"
 # ClashFox 数据目录
@@ -67,7 +67,9 @@ clear_screen() {
     clear
 }
 
+#========================
 # 显示标题
+#========================
 show_title() {
     clear_screen
     echo -e "${CYAN}===============================================================${NC}"
@@ -79,17 +81,50 @@ show_title() {
     echo ""
 }
 
+#========================
 # 显示分隔线
+#========================
 show_separator() {
     echo -e "${BLUE}----------------------------------------${NC}"
 }
 
+#========================
 # 等待用户按键
+#========================
 wait_for_key() {
     echo ""
     read -p "按 Enter 键继续..."
 }
 
+#========================
+# 请求 sudo 权限
+#========================
+request_sudo_permission() {
+    echo ""
+    echo -e "${YELLOW}===============================================================${NC}"
+    echo -e "${YELLOW}⚠️  需要系统权限以执行内核管理操作${NC}"
+    echo -e "${YELLOW}===============================================================${NC}"
+    echo -e "${CYAN}说明: 内核启动/关闭/重启/状态等操作需要 sudo 权限${NC}"
+    echo -e "${CYAN}授权: 请输入您的 macOS 用户密码以继续${NC}"
+    echo ""
+
+    if sudo -v 2>/dev/null; then
+        # 保持 sudo 权限有效期（后台进程，每60秒刷新一次）
+        sudo -v -s >/dev/null 2>&1 <<-EOF
+            while true; do
+                sudo -n true >/dev/null 2>&1  # 静默刷新 sudo 权限
+                sleep 60                      # 等待60秒
+                kill -0 "$$" 2>/dev/null || exit  # 检查主进程是否存活，否则退出
+            done &
+EOF
+        echo -e "${GREEN}[成功] 权限验证通过${NC}"
+        echo ""
+    else
+        echo -e "${RED}[错误] 密码验证失败，请重新尝试${NC}"
+        echo ""
+        return 1
+    fi
+}
 
 #========================
 # 检查并创建必要的目录结构
@@ -153,7 +188,7 @@ check_and_create_directories() {
 # 检查内核目录
 #========================
 require_core_dir() {
-    echo -e "${BLUE}[步骤] 检查 ClashFox 内核目录...${NC}"
+#    echo -e "${BLUE}[步骤] 检查 ClashFox 内核目录...${NC}"
 
     if [ ! -d "$CLASHFOX_CORE_DIR" ]; then
         echo -e "${YELLOW}[提示] 内核目录不存在，正在创建完整目录结构...${NC}"
@@ -170,60 +205,117 @@ require_core_dir() {
         return 1;
     }
 
-    echo -e "${GREEN}[成功] 当前目录: $CLASHFOX_CORE_DIR${NC}"
+#    echo -e "${GREEN}[成功] 内核目录: $CLASHFOX_CORE_DIR${NC}"
     return 0
 }
+
+
+#========================
+# 检查 Mihomo 进程状态
+#========================
+check_mihomo_status() {
+    # 快速检查：首先尝试不使用 sudo 检查进程状态（最快）
+    if pgrep -x "$ACTIVE_CORE" > /dev/null 2>&1; then
+        echo "已运行"
+        return 0
+    fi
+
+    # 如果快速检查失败，静默尝试使用 sudo 检查（不触发完整的权限请求流程）
+    if sudo -n pgrep -x "$ACTIVE_CORE" > /dev/null 2>&1; then
+        echo "已运行"
+        return 0
+    fi
+
+    # 如果需要交互式sudo权限，才调用完整的权限请求函数
+    if ! sudo -n true > /dev/null 2>&1; then
+          # 确保有sudo权限
+          if ! request_sudo_permission; then
+              return
+          fi
+        if  sudo pgrep -x "$ACTIVE_CORE" > /dev/null 2>&1; then
+            echo "已运行"
+            return 0
+        fi
+    fi
+
+    # 所有检查都失败，返回已停止
+    echo "已停止"
+    return 1
+}
+
 #========================
 # 显示当前状态
 #========================
 show_status() {
     clear_screen
     show_title
-    echo ""
-    echo -e "${CYAN}[功能] 显示内核状态${NC}"
-    show_separator
 
-    if ! require_core_dir; then
+    # 确保有sudo权限
+    if ! request_sudo_permission; then
         return
     fi
 
-    if [ -f "$ACTIVE_CORE" ]; then
-        echo "[信息] 内核文件存在"
-        if [ -x "$ACTIVE_CORE" ]; then
-            CURRENT_RAW=$("./$ACTIVE_CORE" -v 2>/dev/null | head -n1)
-            echo "[信息] 内核版本: $CURRENT_RAW"
-            if [[ "$CURRENT_RAW" =~ ^Mihomo[[:space:]]+Meta[[:space:]]+([^[:space:]]+)[[:space:]]+darwin[[:space:]]+(amd64|arm64) ]]; then
-                CURRENT_VER="${BASH_REMATCH[1]}"
-                CURRENT_ARCH="${BASH_REMATCH[2]}"
-                CURRENT_DISPLAY="mihomo-darwin-${CURRENT_ARCH}-${CURRENT_VER}"
+    show_separator
+    echo -e "${CYAN}[功能] 内核状态检查${NC}"
+    show_separator
+
+    # 内核运行状态
+    echo -e "\n${BLUE}• 运行状态:${NC}"
+    MIHOMO_STATUS=$(check_mihomo_status)
+    if [ "$MIHOMO_STATUS" = "已运行" ]; then
+        echo -e "  ${GREEN}✓ $MIHOMO_STATUS${NC}"
+    else
+        echo -e "  ${RED}✗ $MIHOMO_STATUS${NC}"
+    fi
+
+    # 目录和内核文件检查
+    if require_core_dir; then
+        echo -e "\n${BLUE}• 内核文件信息:${NC}"
+
+        if [ -f "$ACTIVE_CORE" ]; then
+            echo -e "  ${GREEN}✓ 内核文件存在${NC}"
+
+            if [ -x "$ACTIVE_CORE" ]; then
+                CURRENT_RAW=$("./$ACTIVE_CORE" -v 2>/dev/null | head -n1)
+                echo -e "  ${BLUE}版本信息:${NC} $CURRENT_RAW"
+
+                if [[ "$CURRENT_RAW" =~ ^Mihomo[[:space:]]+Meta[[:space:]]+([^[:space:]]+)[[:space:]]+darwin[[:space:]]+(amd64|arm64) ]]; then
+                    CURRENT_VER="${BASH_REMATCH[1]}"
+                    CURRENT_ARCH="${BASH_REMATCH[2]}"
+                    CURRENT_DISPLAY="mihomo-darwin-${CURRENT_ARCH}-${CURRENT_VER}"
+                    echo -e "  ${BLUE}显示名称:${NC} ${RED}$CURRENT_DISPLAY${NC}"
+                else
+                    echo -e "  ${BLUE}显示名称:${NC} ${RED}$ACTIVE_CORE (无法解析)${NC}"
+                fi
             else
-                CURRENT_DISPLAY="$ACTIVE_CORE (无法解析)"
+                echo -e "  ${RED}✗ 内核文件不可执行${NC}"
             fi
         else
-            CURRENT_DISPLAY="$ACTIVE_CORE (不可执行)"
+            echo -e "  ${RED}✗ 内核文件不存在${NC}"
         fi
-        echo -e "当前内核: $ACTIVE_CORE -> ${RED}$CURRENT_DISPLAY${NC}"
-    else
-        echo -e "${RED}内核文件不存在${NC}"
-    fi
 
-    echo ""
-    echo -e "${BLUE}[步骤] 检查备份信息${NC}"
-    LATEST=$(ls -1t mihomo.backup.* 2>/dev/null | head -n1)
-    if [ -n "$LATEST" ]; then
-        echo "[信息] 最新备份: $LATEST"
-        if [[ "$LATEST" =~ ^(mihomo\.backup\.(mihomo-darwin-(amd64|arm64)-.+))\.([0-9]{8}_[0-9]{6})$ ]]; then
-            BACKUP_VER="${BASH_REMATCH[2]}"
-            BACKUP_TIMESTAMP="${BASH_REMATCH[4]}"
+        # 备份信息检查
+        echo -e "\n${BLUE}• 备份信息:${NC}"
+        LATEST=$(ls -1t mihomo.backup.* 2>/dev/null | head -n1)
+
+        if [ -n "$LATEST" ]; then
+            echo -e "  ${GREEN}✓ 找到备份文件${NC}"
+            echo -e "  ${BLUE}最新备份:${NC} $LATEST"
+
+            if [[ "$LATEST" =~ ^mihomo\.backup\.mihomo-darwin-(amd64|arm64)-(.+)\.([0-9]{8}_[0-9]{6})$ ]]; then
+                BACKUP_VER="${BASH_REMATCH[2]}"
+                BACKUP_TIMESTAMP="${BASH_REMATCH[3]}"
+                echo -e "  ${BLUE}备份版本:${NC} ${RED}$BACKUP_VER${NC}"
+                echo -e "  ${BLUE}备份时间:${NC} ${YELLOW}$BACKUP_TIMESTAMP${NC}"
+            else
+                echo -e "  ${BLUE}备份版本:${NC} ${RED}未知版本${NC}"
+            fi
         else
-            BACKUP_VER="未知版本"
-            BACKUP_TIMESTAMP=""
+            echo -e "  ${YELLOW}⚠️  未找到任何备份${NC}"
         fi
-        echo -e "最新备份版本: ${RED}$BACKUP_VER${NC}, 时间戳: ${YELLOW}$BACKUP_TIMESTAMP${NC}"
-    else
-        echo -e "${YELLOW}未找到任何备份${NC}"
     fi
 
+    show_separator
     wait_for_key
 }
 
@@ -369,7 +461,9 @@ switch_core() {
     wait_for_key
 }
 
+#========================
 # 列出备份内容（用于切换功能）
+#========================
 list_backups_content() {
     BACKUP_FILES=$(ls -1 mihomo.backup.* 2>/dev/null)
     if [ -z "$BACKUP_FILES" ]; then
@@ -516,26 +610,6 @@ install_core() {
     wait_for_key
 }
 
-#========================
-# 检查 Mihomo 进程状态
-#========================
-check_mihomo_status() {
-    # 尝试不使用 sudo 检查进程状态
-    if pgrep -x "$ACTIVE_CORE" > /dev/null 2>&1; then
-        echo "已运行"
-        return 0
-    else
-        # 如果没有找到，尝试使用 sudo 检查（需要权限时会提示）
-        if request_sudo_permission && sudo pgrep -x "$ACTIVE_CORE" > /dev/null 2>&1; then
-            echo "已运行"
-            return 0
-        else
-            echo "已停止"
-            return 1
-        fi
-    fi
-}
-
 # 获取 Mihomo 版本
 get_mihomo_version() {
     if [ -x "$CLASHFOX_CORE_DIR/$ACTIVE_CORE" ]; then
@@ -550,36 +624,6 @@ get_mihomo_version() {
         echo "未安装"
     fi
 }
-
-#========================
-# 请求 sudo 权限
-#========================
-request_sudo_permission() {
-    echo -e "${YELLOW}===============================================================${NC}"
-    echo -e "${YELLOW}⚠️  需要系统权限以执行内核管理操作${NC}"
-    echo -e "${YELLOW}===============================================================${NC}"
-    echo -e "${CYAN}说明: 内核启动/关闭/重启等操作需要 sudo 权限${NC}"
-    echo -e "${CYAN}      请输入您的 macOS 用户密码以继续${NC}"
-    echo ""
-
-    if sudo -v; then
-        # 保持 sudo 权限有效期
-        sudo -v -s <<EOF
-while true; do sudo -n true; sleep 60; kill -0 "$$" || exit; done 2>/dev/null &
-EOF
-        echo -e "${GREEN}[成功] 权限验证通过${NC}"
-        echo ""
-        return 0
-    else
-        echo -e "${RED}[错误] 密码验证失败，请重新尝试${NC}"
-        echo ""
-        return 1
-    fi
-}
-
-#========================
-# 内核控制功能
-#========================
 
 #========================
 # 启动 Mihomo 内核
@@ -712,7 +756,9 @@ start_mihomo_kernel() {
     wait_for_key
 }
 
+#========================
 # 关闭 Mihomo 内核
+#========================
 kill_mihomo_kernel() {
     show_title
     echo -e "${CYAN}[功能] 关闭 Mihomo 内核${NC}"
@@ -781,7 +827,9 @@ kill_mihomo_kernel() {
     wait_for_key
 }
 
+#========================
 # 重启 Mihomo 内核
+#========================
 restart_mihomo_kernel() {
     show_title
     echo -e "${CYAN}[功能] 重启 Mihomo 内核${NC}"
@@ -860,7 +908,9 @@ manage_kernel_menu() {
     done
 }
 
+#========================
 # 查看 Mihomo 内核日志
+#========================
 show_logs() {
     show_title
     echo -e "${CYAN}[功能] 查看 Mihomo 内核日志${NC}"
@@ -931,26 +981,16 @@ show_help() {
     show_title
     echo -e "${CYAN}[功能] 帮助信息${NC}"
     show_separator
-
-    echo -e "${BLUE}ClashFox Mihomo 内核管理器${NC}"
-    echo -e "版本: ${YELLOW}$SCRIPT_VERSION${NC}"
-    echo ""
     echo -e "${BLUE}功能说明:${NC}"
     echo "  1. 安装/更新 Mihomo 内核 - 从 GitHub 下载最新内核并安装"
-    echo "  2. 切换内核版本 - 在已备份的内核版本之间切换"
+    echo "  2. 内核控制 (启动/关闭/重启) - 管理内核的运行状态"
     echo "  3. 查看当前状态 - 显示当前内核版本和最新备份信息"
-    echo "  4. 列出所有备份 - 查看所有已备份的内核版本"
-    echo "  5. 内核控制 (启动/关闭/重启) - 管理内核的运行状态"
+    echo "  4. 切换内核版本 - 在已备份的内核版本之间切换"
+    echo "  5. 列出所有备份 - 查看所有已备份的内核版本"
     echo "  6. 查看内核日志"
     echo "  7. 清除日志"
     echo "  6. 显示帮助信息 - 显示此帮助内容"
     echo "  0. 退出程序 - 退出内核管理器"
-    echo ""
-    echo -e "${BLUE}新增功能:${NC}"
-    echo "  - 完整的目录结构自动检查与创建"
-    echo "  - 配置文件与日志目录的智能管理"
-    echo "  - PID 文件管理确保进程安全控制"
-    echo "  - 内核运行环境的完整性验证"
     echo ""
     echo -e "${BLUE}使用提示:${NC}"
     echo "  - 按数字键选择功能，然后按 Enter 键"
@@ -961,7 +1001,9 @@ show_help() {
     wait_for_key
 }
 
-# 清理旧日志
+#========================
+# 清理旧日志文件
+#========================
 clean_logs() {
     show_title
     echo -e "${CYAN}[功能] 清理旧日志文件${NC}"
@@ -1011,7 +1053,9 @@ clean_logs() {
     wait_for_key
 }
 
+#========================
 # 日志滚动功能（支持按大小和按日期备份）
+#========================
 rotate_logs() {
     LOG_FILE="$CLASHFOX_LOG_DIR/clashfox.log"
     MAX_SIZE=10  # MB
@@ -1061,7 +1105,7 @@ rotate_logs() {
 #========================
 show_main_menu() {
     show_title
-
+    echo -e "${CYAN}[状态] 当前内核信息${NC}"
     # Mihomo 状态
     MIHOMO_STATUS=$(check_mihomo_status)
     if [ "$MIHOMO_STATUS" = "已运行" ]; then
@@ -1069,11 +1113,9 @@ show_main_menu() {
     else
         echo -e "Mihomo Status：${RED}$MIHOMO_STATUS${NC}"
     fi
-
     # Mihomo 版本
     MIHOMO_VERSION=$(get_mihomo_version)
     echo -e "Mihomo Kernel：${CYAN}$MIHOMO_VERSION${NC}"
-
     if [ -f "$CLASHFOX_CONFIG_DIR/default.yaml" ]; then
         echo -e "Mihomo Config: ${GREEN}$CLASHFOX_CONFIG_DIR/default.yaml${NC}"
     else
@@ -1082,33 +1124,29 @@ show_main_menu() {
 
     echo ""
 
+    echo -e "${CYAN}[功能] 主菜单${NC}"
     echo -e "${BLUE}请选择要执行的功能:${NC}"
-    echo "  1) 安装/更新 Mihomo 内核"
-    echo "  2) 切换内核版本"
-    echo "  3) 查看当前状态"
-    echo "  4) 列出所有备份"
-    echo "  5) 内核控制 (启动/关闭/重启)"
-    echo "  6) 查看内核日志"
-    echo "  7) 清除日志"
-    echo "  8) 显示帮助信息"
-    echo "  0) 退出程序"
+    echo -e "  ${BLUE}1)${NC} 安装/更新 Mihomo 内核         ${BLUE}2)${NC} 内核控制(启动/关闭/重启) "
+    echo -e "  ${BLUE}3)${NC} 查看当前状态                  ${BLUE}4)${NC} 切换内核版本"
+    echo -e "  ${BLUE}5)${NC} 列出所有备份                  ${BLUE}6)${NC} 查看内核日志"
+    echo -e "  ${BLUE}7)${NC} 清除日志                      ${BLUE}8)${NC} 显示帮助信息"
+    echo -e "  ${BLUE}0)${NC} 退出程序"
     echo ""
 }
 
+#========================
 # 程序退出时的清理函数
+#========================
 cleanup() {
-    echo ""
-    echo -e "${BLUE}[退出] 正在清理日志后台进程...${NC}"
-
-    # 终止日志检查后台进程（如果存在）
+    # 只在有实际清理操作时才输出日志
     if [ -n "$LOG_CHECKER_PID" ]; then
+        # 静默终止日志检查后台进程
         kill "$LOG_CHECKER_PID" 2>/dev/null
         wait "$LOG_CHECKER_PID" 2>/dev/null
-        echo -e "${GREEN}[成功] 日志检查进程已终止${NC}"
+
+        # 仅输出一条简洁的成功信息
+        echo -e "\n${GREEN}[清理] 日志检查进程已终止${NC}"
     fi
-
-    echo -e "${GREEN}[成功] 日志后台进程已清理${NC}"
-
 }
 
 # 注册退出处理函数 - 优化版本
@@ -1234,16 +1272,16 @@ main() {
                 install_core
                 ;;
             2)
-                switch_core
+                manage_kernel_menu
                 ;;
             3)
                 show_status
                 ;;
             4)
-                show_list_backups
+                switch_core
                 ;;
             5)
-                manage_kernel_menu
+                show_list_backups
                 ;;
             6)
                 show_logs
