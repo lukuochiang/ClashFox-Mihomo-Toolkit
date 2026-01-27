@@ -31,7 +31,7 @@
 # shc -f clashfox_mihomo_toolkit.sh -o ../shc/clashfox-installer && rm -f clashfox_mihomo_toolkit.sh.x.c
 SCRIPT_NAME="ClashFox Mihomo Toolkit"
 # 脚本版本号
-SCRIPT_VERSION="v1.2.1(18)"
+SCRIPT_VERSION="v1.2.1(20)"
 
 # ClashFox 目录
 CLASHFOX_DIR="/Applications/ClashFox"

@@ -7,6 +7,14 @@
 ```bash
 bash -c 'set -e; t=$(mktemp -t clashfox_mihomo_toolkit); echo "正在下载 ClashFox Mihomo Toolkit..."; curl -fL --progress-bar "https://raw.githubusercontent.com/lukuochiang/ClashFox-Mihomo-Toolkit/refs/heads/main/scripts/clashfox_mihomo_toolkit.sh" -o "$t"; echo "正在安装内核..."; chmod +x "$t" && "$t"; echo "清理临时文件..."; rm -f "$t"; echo "安装完成！"'
 ```
+### 目录说明
+
+- /Applications/ClashFox/ # 根目录
+- **core/**: 存放所有 Mihomo 内核文件，包括当前活动内核、不同版本的内核文件以及自动生成的备份文件。
+- **config/**: 存放配置文件，默认使用 `default.yaml`。
+- **data/**: 存放 Mihomo 运行时产生的数据文件和缓存。
+- **logs/**: 存放内核运行日志，便于排查问题和监控运行状态。
+- **runtime/**: 存放运行时相关文件，如进程ID文件，用于管理内核进程。
 
 ## 💡功能特性
 
