@@ -5,7 +5,7 @@
 ## ⚡️一键安装
 
 ```bash
-bash -c 't=$(mktemp /tmp/clashfox_mihomo_toolkit.sh)&&curl -fL https://raw.githubusercontent.com/lukuochiang/clashmac-mihomo-kernel-helper/refs/heads/main/scripts/clashfox_mihomo_toolkit.sh -o "$t"&&chmod +x "$t"&&"$t" install&&rm -f "$t"'
+bash -c 'set -e; t=$(mktemp -t clashfox_mihomo_toolkit); echo "正在下载 ClashFox Mihomo Toolkit..."; curl -fL --progress-bar "https://raw.githubusercontent.com/lukuochiang/ClashFox-Mihomo-Toolkit/refs/heads/main/scripts/clashfox_mihomo_toolkit.sh" -o "$t"; echo "正在安装内核..."; chmod +x "$t" && "$t"; echo "清理临时文件..."; rm -f "$t"; echo "安装完成！"'
 ```
 
 ## 💡功能特性
