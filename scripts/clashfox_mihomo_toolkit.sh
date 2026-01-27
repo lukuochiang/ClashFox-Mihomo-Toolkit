@@ -76,7 +76,6 @@ show_title() {
     echo -e "${CYAN}版本: $SCRIPT_VERSION${NC}"
     echo ""
     echo -e "${YELLOW}[提示] 欢迎 $USER 使用 ${SCRIPT_NAME}${NC}"
-    echo -e "${YELLOW}[提示] 运行脚本过程中需要管理员权限，请务必授权${NC}"
     echo ""
 }
 
@@ -91,6 +90,65 @@ wait_for_key() {
     read -p "按 Enter 键继续..."
 }
 
+
+#========================
+# 检查并创建必要的目录结构
+#========================
+check_and_create_directories() {
+    echo -e "${BLUE}[初始化] 检查目录结构...${NC}"
+
+    # 检查是否有足够权限创建目录
+    if [ ! -w "$(dirname "$CLASHFOX_DIR")" ]; then
+        echo -e "${YELLOW}[提示] 需要管理员权限创建目录结构${NC}"
+        if ! request_sudo_permission; then
+            echo -e "${RED}[错误] 权限不足，无法创建目录结构${NC}"
+            return 1
+        fi
+    fi
+
+    # 检查并创建内核目录
+    if [ ! -d "$CLASHFOX_CORE_DIR" ]; then
+        echo -e "${YELLOW}[提示] 创建内核目录: $CLASHFOX_CORE_DIR${NC}"
+        sudo mkdir -p "$CLASHFOX_CORE_DIR"
+    fi
+    echo -e "${GREEN}[成功] 内核目录存在: $CLASHFOX_CORE_DIR${NC}"
+
+    # 检查并创建配置目录
+    if [ ! -d "$CLASHFOX_CONFIG_DIR" ]; then
+        echo -e "${YELLOW}[提示] 创建配置目录: $CLASHFOX_CONFIG_DIR${NC}"
+        sudo mkdir -p "$CLASHFOX_CONFIG_DIR"
+    fi
+    echo -e "${GREEN}[成功] 配置目录存在: $CLASHFOX_CONFIG_DIR${NC}"
+
+    # 检查并创建数据目录
+    if [ ! -d "$CLASHFOX_DATA_DIR" ]; then
+        echo -e "${YELLOW}[提示] 创建数据目录: $CLASHFOX_DATA_DIR${NC}"
+        sudo mkdir -p "$CLASHFOX_DATA_DIR"
+    fi
+    echo -e "${GREEN}[成功] 数据目录存在: $CLASHFOX_DATA_DIR${NC}"
+
+    # 检查并创建日志目录
+    if [ ! -d "$CLASHFOX_LOG_DIR" ]; then
+        echo -e "${YELLOW}[提示] 创建日志目录: $CLASHFOX_LOG_DIR${NC}"
+        sudo mkdir -p "$CLASHFOX_LOG_DIR"
+    fi
+    echo -e "${GREEN}[成功] 日志目录存在: $CLASHFOX_LOG_DIR${NC}"
+
+    # 检查并创建运行时目录
+    if [ ! -d "$CLASHFOX_PID_DIR" ]; then
+        echo -e "${YELLOW}[提示] 创建运行时目录: $CLASHFOX_PID_DIR${NC}"
+        sudo mkdir -p "$CLASHFOX_PID_DIR"
+    fi
+    echo -e "${GREEN}[成功] 运行时目录存在: $CLASHFOX_PID_DIR${NC}"
+
+    # 设置目录权限，确保当前用户可以访问
+    echo -e "${BLUE}[初始化] 设置目录权限...${NC}"
+    sudo chown -R "$USER:admin" "$CLASHFOX_DIR"
+    sudo chmod -R 755 "$CLASHFOX_DIR"
+    echo -e "${GREEN}[成功] 目录权限已设置${NC}"
+}
+
+
 #========================
 # 检查内核目录
 #========================
@@ -98,9 +156,12 @@ require_core_dir() {
     echo -e "${BLUE}[步骤] 检查 ClashFox 内核目录...${NC}"
 
     if [ ! -d "$CLASHFOX_CORE_DIR" ]; then
-        echo -e "${RED}[错误] 内核目录不存在: $CLASHFOX_CORE_DIR${NC}"
-        wait_for_key
-        return 1
+        echo -e "${YELLOW}[提示] 内核目录不存在，正在创建完整目录结构...${NC}"
+        if ! check_and_create_directories; then
+            echo -e "${RED}[错误] 目录结构创建失败${NC}"
+            wait_for_key
+            return 1
+        fi
     fi
 
     cd "$CLASHFOX_CORE_DIR" || {
@@ -112,7 +173,6 @@ require_core_dir() {
     echo -e "${GREEN}[成功] 当前目录: $CLASHFOX_CORE_DIR${NC}"
     return 0
 }
-
 #========================
 # 显示当前状态
 #========================
@@ -344,10 +404,7 @@ install_core() {
     show_separator
 
     if ! require_core_dir; then
-        #========================
-        # 检查并创建必要的目录结构
-        #========================
-        check_and_create_directories
+        return
     fi
 
     VERSION_BRANCH="$DEFAULT_BRANCH"
@@ -459,14 +516,23 @@ install_core() {
     wait_for_key
 }
 
+#========================
 # 检查 Mihomo 进程状态
+#========================
 check_mihomo_status() {
-    if sudo pgrep -x "$ACTIVE_CORE" > /dev/null 2>&1; then
+    # 尝试不使用 sudo 检查进程状态
+    if pgrep -x "$ACTIVE_CORE" > /dev/null 2>&1; then
         echo "已运行"
         return 0
     else
-        echo "已停止"
-        return 1
+        # 如果没有找到，尝试使用 sudo 检查（需要权限时会提示）
+        if request_sudo_permission && sudo pgrep -x "$ACTIVE_CORE" > /dev/null 2>&1; then
+            echo "已运行"
+            return 0
+        else
+            echo "已停止"
+            return 1
+        fi
     fi
 }
 
@@ -991,63 +1057,6 @@ rotate_logs() {
 }
 
 #========================
-# 检查并创建必要的目录结构
-#========================
-check_and_create_directories() {
-    echo -e "${BLUE}[初始化] 检查目录结构...${NC}"
-
-    # 检查是否有足够权限创建目录
-    if [ ! -w "$(dirname "$CLASHFOX_DIR")" ]; then
-        echo -e "${YELLOW}[提示] 需要管理员权限创建目录结构${NC}"
-        if ! request_sudo_permission; then
-            echo -e "${RED}[错误] 权限不足，无法创建目录结构${NC}"
-            return 1
-        fi
-    fi
-
-    # 检查并创建内核目录
-    if [ ! -d "$CLASHFOX_CORE_DIR" ]; then
-        echo -e "${YELLOW}[提示] 创建内核目录: $CLASHFOX_CORE_DIR${NC}"
-        sudo mkdir -p "$CLASHFOX_CORE_DIR"
-    fi
-    echo -e "${GREEN}[成功] 内核目录存在: $CLASHFOX_CORE_DIR${NC}"
-
-    # 检查并创建配置目录
-    if [ ! -d "$CLASHFOX_CONFIG_DIR" ]; then
-        echo -e "${YELLOW}[提示] 创建配置目录: $CLASHFOX_CONFIG_DIR${NC}"
-        sudo mkdir -p "$CLASHFOX_CONFIG_DIR"
-    fi
-    echo -e "${GREEN}[成功] 配置目录存在: $CLASHFOX_CONFIG_DIR${NC}"
-
-    # 检查并创建数据目录
-    if [ ! -d "$CLASHFOX_DATA_DIR" ]; then
-        echo -e "${YELLOW}[提示] 创建数据目录: $CLASHFOX_DATA_DIR${NC}"
-        sudo mkdir -p "$CLASHFOX_DATA_DIR"
-    fi
-    echo -e "${GREEN}[成功] 数据目录存在: $CLASHFOX_DATA_DIR${NC}"
-
-    # 检查并创建日志目录
-    if [ ! -d "$CLASHFOX_LOG_DIR" ]; then
-        echo -e "${YELLOW}[提示] 创建日志目录: $CLASHFOX_LOG_DIR${NC}"
-        sudo mkdir -p "$CLASHFOX_LOG_DIR"
-    fi
-    echo -e "${GREEN}[成功] 日志目录存在: $CLASHFOX_LOG_DIR${NC}"
-
-    # 检查并创建运行时目录
-    if [ ! -d "$CLASHFOX_PID_DIR" ]; then
-        echo -e "${YELLOW}[提示] 创建运行时目录: $CLASHFOX_PID_DIR${NC}"
-        sudo mkdir -p "$CLASHFOX_PID_DIR"
-    fi
-    echo -e "${GREEN}[成功] 运行时目录存在: $CLASHFOX_PID_DIR${NC}"
-
-    # 设置目录权限，确保当前用户可以访问
-    echo -e "${BLUE}[初始化] 设置目录权限...${NC}"
-    sudo chown -R "$USER:admin" "$CLASHFOX_DIR"
-    sudo chmod -R 755 "$CLASHFOX_DIR"
-    echo -e "${GREEN}[成功] 目录权限已设置${NC}"
-}
-
-#========================
 # 显示主菜单
 #========================
 show_main_menu() {
@@ -1158,6 +1167,8 @@ parse_arguments() {
 # 主程序
 #========================
 main() {
+    show_title
+
     # 检查是否有命令行参数
     if [ $# -gt 0 ]; then
         parse_arguments "$@"
