@@ -7,7 +7,7 @@
 # -----------------------------------------------------------------------------
 
 # Author: Kuochiang Lu
-# Version: 1.2.0
+# Version: 1.2.1
 # Last Updated: 2026-01-27
 #
 # 描述：
@@ -15,9 +15,9 @@
 #   提供下载、安装、切换、备份及运行状态控制等一站式服务，确保内核运行环境的完整性和稳定性。
 #
 # 功能：
-#   - 安装/更新最新 mihomo 核心（支持多 GitHub 源选择）
+#   - 安装/更新最新 mihomo 内核（支持多 GitHub 源选择）
 #   - 自动检测系统架构 (arm64 / amd64)
-#   - 智能核心备份机制（按时间戳管理，保留历史版本）
+#   - 智能内核备份机制（按时间戳管理，保留历史版本）
 #   - 灵活的内核版本切换功能
 #   - 实时显示内核运行状态及版本信息
 #   - 完整的目录结构检查与自动创建
@@ -35,7 +35,7 @@ SCRIPT_VERSION="v1.2.0"
 
 # ClashFox 目录
 CLASHFOX_DIR="/Applications/ClashFox"
-# ClashFox 核心目录
+# ClashFox 内核目录
 CLASHFOX_CORE_DIR="$CLASHFOX_DIR/bin"
 # ClashFox 默认配置文件路径
 CLASHFOX_CONFIG_DIR="$CLASHFOX_DIR/config"
@@ -45,7 +45,7 @@ CLASHFOX_DATA_DIR="$CLASHFOX_DIR/data"
 CLASHFOX_LOG_DIR="$CLASHFOX_DIR/logs"
 # ClashFox PID 文件路径
 CLASHFOX_PID_DIR="$CLASHFOX_DIR/runtime"
-# 当前激活的核心名称
+# 当前激活的内核名称
 ACTIVE_CORE="mihomo"
 
 # 可选 GitHub 用户
@@ -89,19 +89,19 @@ wait_for_key() {
 }
 
 #========================
-# 检查核心目录
+# 检查内核目录
 #========================
 require_core_dir() {
-    echo -e "${BLUE}[步骤] 检查 ClashFox 核心目录...${NC}"
+    echo -e "${BLUE}[步骤] 检查 ClashFox 内核目录...${NC}"
 
     if [ ! -d "$CLASHFOX_CORE_DIR" ]; then
-        echo -e "${RED}[错误] 核心目录创建失败: $CLASHFOX_CORE_DIR${NC}"
+        echo -e "${RED}[错误] 内核目录不存在: $CLASHFOX_CORE_DIR${NC}"
         wait_for_key
         return 1
     fi
 
     cd "$CLASHFOX_CORE_DIR" || {
-        echo -e "${RED}[错误] 进入核心目录失败${NC}";
+        echo -e "${RED}[错误] 无法进入内核目录${NC}";
         wait_for_key;
         return 1;
     }
@@ -117,7 +117,7 @@ show_status() {
     clear_screen
     show_title
     echo ""
-    echo -e "${CYAN}[功能] 显示当前内核状态${NC}"
+    echo -e "${CYAN}[功能] 显示内核状态${NC}"
     show_separator
 
     if ! require_core_dir; then
@@ -125,10 +125,10 @@ show_status() {
     fi
 
     if [ -f "$ACTIVE_CORE" ]; then
-        echo "[信息] 当前核心文件存在"
+        echo "[信息] 内核文件存在"
         if [ -x "$ACTIVE_CORE" ]; then
             CURRENT_RAW=$("./$ACTIVE_CORE" -v 2>/dev/null | head -n1)
-            echo "[信息] 当前核心版本信息: $CURRENT_RAW"
+            echo "[信息] 内核版本: $CURRENT_RAW"
             if [[ "$CURRENT_RAW" =~ ^Mihomo[[:space:]]+Meta[[:space:]]+([^[:space:]]+)[[:space:]]+darwin[[:space:]]+(amd64|arm64) ]]; then
                 CURRENT_VER="${BASH_REMATCH[1]}"
                 CURRENT_ARCH="${BASH_REMATCH[2]}"
@@ -139,16 +139,16 @@ show_status() {
         else
             CURRENT_DISPLAY="$ACTIVE_CORE (不可执行)"
         fi
-        echo -e "当前核心: $ACTIVE_CORE -> ${RED}$CURRENT_DISPLAY${NC}"
+        echo -e "当前内核: $ACTIVE_CORE -> ${RED}$CURRENT_DISPLAY${NC}"
     else
-        echo -e "${RED}当前核心文件不存在${NC}"
+        echo -e "${RED}内核文件不存在${NC}"
     fi
 
     echo ""
-    echo -e "${BLUE}[步骤] 获取最新备份信息${NC}"
+    echo -e "${BLUE}[步骤] 检查备份信息${NC}"
     LATEST=$(ls -1t mihomo.backup.* 2>/dev/null | head -n1)
     if [ -n "$LATEST" ]; then
-        echo "[信息] 最新备份文件: $LATEST"
+        echo "[信息] 最新备份: $LATEST"
         if [[ "$LATEST" =~ ^(mihomo\.backup\.(mihomo-darwin-(amd64|arm64)-.+))\.([0-9]{8}_[0-9]{6})$ ]]; then
             BACKUP_VER="${BASH_REMATCH[2]}"
             BACKUP_TIMESTAMP="${BASH_REMATCH[4]}"
@@ -264,15 +264,15 @@ switch_core() {
     fi
 
     echo ""
-    echo -e "${BLUE}[步骤] 开始切换核心...${NC}"
+    echo -e "${BLUE}[步骤] 开始切换内核...${NC}"
     echo "[信息] 选择的备份文件: $TARGET_BACKUP"
 
-    # 显示当前核心信息
+    # 显示当前内核信息
     if [ -f "$ACTIVE_CORE" ]; then
         CURRENT_RAW=$("./$ACTIVE_CORE" -v 2>/dev/null | head -n1 2>/dev/null)
-        echo "[信息] 当前核心版本: $CURRENT_RAW"
+        echo "[信息] 当前内核版本: $CURRENT_RAW"
     else
-        echo "[信息] 当前核心不存在"
+        echo "[信息] 当前内核不存在"
     fi
 
     # 确认操作
@@ -283,26 +283,26 @@ switch_core() {
         return
     fi
 
-    # 备份当前核心
+    # 备份当前内核
     if [ -f "$ACTIVE_CORE" ]; then
         TIMESTAMP=$(date +%Y%m%d_%H%M%S)
         ROLLBACK_FILE="${ACTIVE_CORE}.bak.$TIMESTAMP"
         cp "$ACTIVE_CORE" "$ROLLBACK_FILE"
-        echo "[步骤] 已备份当前核心 -> $ROLLBACK_FILE"
+        echo "[步骤] 已备份当前内核 -> $ROLLBACK_FILE"
     fi
 
-    # 替换核心
+    # 替换内核
     TMP_CORE="${ACTIVE_CORE}.tmp"
     cp "$TARGET_BACKUP" "$TMP_CORE"
     mv -f "$TMP_CORE" "$ACTIVE_CORE"
     chmod +x "$ACTIVE_CORE"
-    echo "[步骤] 核心已替换为: $TARGET_BACKUP"
+    echo "[步骤] 内核已替换为: $TARGET_BACKUP"
 
     # 删除临时备份
     rm -f "$ROLLBACK_FILE"
     echo "[步骤] 已删除临时备份文件: $ROLLBACK_FILE"
 
-    echo -e "${GREEN}[完成] 核心切换完成${NC}"
+    echo -e "${GREEN}[完成] 内核切换完成${NC}"
     wait_for_key
 }
 
@@ -420,15 +420,15 @@ install_core() {
         return
     fi
 
-    # 备份当前核心
+    # 备份当前内核
     TIMESTAMP=$(date +%Y%m%d_%H%M%S)
     BACKUP_FILE="mihomo.backup.${VERSION}.${TIMESTAMP}"
 
     if [ -f "$ACTIVE_CORE" ]; then
         cp "$ACTIVE_CORE" "$BACKUP_FILE"
-        echo -e "[步骤] 已备份当前核心 -> ${YELLOW}$BACKUP_FILE${NC}"
+        echo -e "[步骤] 已备份当前内核 -> ${YELLOW}$BACKUP_FILE${NC}"
     else
-        echo -e "[步骤] 当前无核心文件，跳过备份"
+        echo -e "[步骤] 当前无内核文件，跳过备份"
     fi
 
     # 下载并安装
@@ -991,12 +991,12 @@ check_and_create_directories() {
         fi
     fi
 
-    # 检查并创建核心目录
+    # 检查并创建内核目录
     if [ ! -d "$CLASHFOX_CORE_DIR" ]; then
-        echo -e "${YELLOW}[提示] 创建核心目录: $CLASHFOX_CORE_DIR${NC}"
+        echo -e "${YELLOW}[提示] 创建内核目录: $CLASHFOX_CORE_DIR${NC}"
         sudo mkdir -p "$CLASHFOX_CORE_DIR"
     fi
-    echo -e "${GREEN}[成功] 核心目录存在: $CLASHFOX_CORE_DIR${NC}"
+    echo -e "${GREEN}[成功] 内核目录存在: $CLASHFOX_CORE_DIR${NC}"
 
     # 检查并创建配置目录
     if [ ! -d "$CLASHFOX_CONFIG_DIR" ]; then
