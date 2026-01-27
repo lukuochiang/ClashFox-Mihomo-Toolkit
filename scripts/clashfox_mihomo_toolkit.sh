@@ -7,7 +7,7 @@
 # -----------------------------------------------------------------------------
 
 # Author: Kuochiang Lu
-# Version: 1.2.1
+# Version: $SCRIPT_VERSION
 # Last Updated: 2026-01-27
 #
 # 描述：
@@ -31,7 +31,7 @@
 # shc -f clashfox_mihomo_toolkit.sh -o ../shc/clashfox-installer && rm -f clashfox_mihomo_toolkit.sh.x.c
 SCRIPT_NAME="ClashFox Mihomo Toolkit"
 # 脚本版本号
-SCRIPT_VERSION="v1.2.0"
+SCRIPT_VERSION="v1.2.1(18)"
 
 # ClashFox 目录
 CLASHFOX_DIR="/Applications/ClashFox"
@@ -74,6 +74,9 @@ show_title() {
     echo -e "${CYAN}                    $SCRIPT_NAME${NC}"
     echo -e "${CYAN}===============================================================${NC}"
     echo -e "${CYAN}版本: $SCRIPT_VERSION${NC}"
+    echo ""
+    echo -e "${YELLOW}[提示] 欢迎 $USER 使用 ${SCRIPT_NAME}${NC}"
+    echo -e "${YELLOW}[提示] 运行脚本过程中需要管理员权限，请务必授权${NC}"
     echo ""
 }
 
@@ -482,17 +485,28 @@ get_mihomo_version() {
     fi
 }
 
+#========================
 # 请求 sudo 权限
+#========================
 request_sudo_permission() {
-    echo -e "${YELLOW}[提示] 请输入密码以获取内核控制权限:${NC}"
+    echo -e "${YELLOW}===============================================================${NC}"
+    echo -e "${YELLOW}⚠️  需要系统权限以执行内核管理操作${NC}"
+    echo -e "${YELLOW}===============================================================${NC}"
+    echo -e "${CYAN}说明: 内核启动/关闭/重启等操作需要 sudo 权限${NC}"
+    echo -e "${CYAN}      请输入您的 macOS 用户密码以继续${NC}"
+    echo ""
+
     if sudo -v; then
         # 保持 sudo 权限有效期
         sudo -v -s <<EOF
 while true; do sudo -n true; sleep 60; kill -0 "$$" || exit; done 2>/dev/null &
 EOF
+        echo -e "${GREEN}[成功] 权限验证通过${NC}"
+        echo ""
         return 0
     else
         echo -e "${RED}[错误] 密码验证失败，请重新尝试${NC}"
+        echo ""
         return 1
     fi
 }
@@ -1153,11 +1167,11 @@ main() {
     rotate_logs
 
     # 程序启动时请求一次sudo权限
-#    echo -e "${BLUE}[初始化] 请求程序执行权限...${NC}"
-#    if ! request_sudo_permission; then
-#        echo -e "${RED}[错误] 授权失败，程序无法正常运行${NC}"
-#        exit 1
-#    fi
+    echo -e "${BLUE}[初始化] 请求程序执行权限...${NC}"
+    if ! request_sudo_permission; then
+        echo -e "${RED}[错误] 授权失败，程序无法正常运行${NC}"
+        exit 1
+    fi
 
     # 确保所有必要目录都已创建
     if ! require_core_dir; then
