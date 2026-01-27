@@ -60,8 +60,38 @@ chmod +x scripts/clashfox_mihomo_toolkit.sh
 ./scripts/clashfox_mihomo_toolkit.sh
 ```
 
-## 使用指南
 
-### 主菜单
+## 常见问题
 
-运行脚本后，将看到主菜单界面：
+### 1. 安装失败怎么办？
+- 检查网络连接是否正常
+- 确保有足够的磁盘空间
+- 检查是否有sudo权限
+- 查看错误信息并根据提示解决
+
+### 2. 内核无法启动怎么办？
+- 检查配置文件是否正确
+- 查看日志文件了解具体错误
+- 确保端口未被占用
+- 尝试重启系统后再试
+
+### 3. 如何更新工具本身？
+- 重新运行一键安装命令
+- 或从GitHub仓库克隆最新版本
+
+### 4. 如何手动备份配置？
+配置文件位于 `/Applications/ClashFox/config/default.yaml`，可以手动复制此文件进行备份。
+
+## 许可证
+
+本项目采用 MIT 许可证 - 查看 [LICENSE](LICENSE) 文件了解详情。
+
+## 致谢
+
+特别感谢以下项目和开发者：
+- [MetaCubeX/mihomo](https://github.com/MetaCubeX/mihomo)
+- [vernesong/mihomo](https://github.com/vernesong/mihomo)
+
+---
+
+**ClashFox-Mihomo-Toolkit** - 让 Mihomo 内核管理变得简单高效！

@@ -1097,29 +1097,19 @@ trap cleanup EXIT
 #========================
 parse_arguments() {
     case "$1" in
-        install|update)
-            echo -e "${BLUE}[命令行] 执行安装/更新内核...${NC}"
-            install_core
-            exit 0
-            ;;
         status)
             echo -e "${BLUE}[命令行] 查看当前状态...${NC}"
             show_status
             exit 0
             ;;
-        list|backups)
+        list)
             echo -e "${BLUE}[命令行] 列出所有备份...${NC}"
             show_list_backups
             exit 0
             ;;
-        switch|change)
+        switch)
             echo -e "${BLUE}[命令行] 切换内核版本...${NC}"
             switch_core
-            exit 0
-            ;;
-        control|manage)
-            echo -e "${BLUE}[命令行] 内核控制...${NC}"
-            manage_kernel_menu
             exit 0
             ;;
         logs|log)
@@ -1143,7 +1133,7 @@ parse_arguments() {
         *)
             if [ -n "$1" ]; then
                 echo -e "${RED}[错误] 未知命令: $1${NC}"
-                echo -e "${YELLOW}可用命令: install, status, list, switch, control, logs, clean, help, version${NC}"
+                echo -e "${YELLOW}可用命令: status, list, switch, logs, clean, help, version${NC}"
                 exit 1
             fi
             ;;
