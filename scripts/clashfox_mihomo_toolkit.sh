@@ -31,20 +31,31 @@
 # shc -f clashfox_mihomo_toolkit.sh -o ../shc/clashfox-installer && rm -f clashfox_mihomo_toolkit.sh.x.c
 SCRIPT_NAME="ClashFox Mihomo Toolkit"
 # 脚本版本号
-SCRIPT_VERSION="v1.2.1(20)"
+SCRIPT_VERSION="v1.2.2(10)"
 
-# ClashFox 目录
-CLASHFOX_DIR="/Applications/ClashFox"
-# ClashFox 内核目录
-CLASHFOX_CORE_DIR="$CLASHFOX_DIR/core"
-# ClashFox 默认配置文件路径
-CLASHFOX_CONFIG_DIR="$CLASHFOX_DIR/config"
-# ClashFox 数据目录
-CLASHFOX_DATA_DIR="$CLASHFOX_DIR/data"
-# ClashFox 日志目录
-CLASHFOX_LOG_DIR="$CLASHFOX_DIR/logs"
-# ClashFox PID 文件路径
-CLASHFOX_PID_DIR="$CLASHFOX_DIR/runtime"
+# ClashFox 默认目录 - 默认值，可通过命令行参数或交互方式修改
+CLASHFOX_DEFAULT_DIR="/Applications/ClashFox"
+CLASHFOX_DIR="$CLASHFOX_DEFAULT_DIR"
+
+# 读取保存的自定义目录
+read_saved_directory
+
+# ClashFox 子目录定义
+set_clashfox_subdirectories() {
+    # ClashFox 内核目录
+    CLASHFOX_CORE_DIR="$CLASHFOX_DIR/core"
+    # ClashFox 默认配置文件路径
+    CLASHFOX_CONFIG_DIR="$CLASHFOX_DIR/config"
+    # ClashFox 数据目录
+    CLASHFOX_DATA_DIR="$CLASHFOX_DIR/data"
+    # ClashFox 日志目录
+    CLASHFOX_LOG_DIR="$CLASHFOX_DIR/logs"
+    # ClashFox PID 文件路径
+    CLASHFOX_PID_DIR="$CLASHFOX_DIR/runtime"
+}
+
+# 初始化子目录
+set_clashfox_subdirectories
 # 当前激活的内核名称
 ACTIVE_CORE="mihomo"
 
@@ -100,7 +111,21 @@ wait_for_key() {
 # 请求 sudo 权限
 #========================
 request_sudo_permission() {
-    echo ""
+    # 先静默检查是否已经有 sudo 权限
+    if sudo -n true 2>/dev/null; then
+        # 保持 sudo 权限有效期（后台进程，每60秒刷新一次）
+        sudo -v -s >/dev/null 2>&1 <<-EOF
+            while true; do
+                sudo -n true >/dev/null 2>&1  # 静默刷新 sudo 权限
+                sleep 60                      # 等待60秒
+                kill -0 "$$" 2>/dev/null || exit  # 检查主进程是否存活，否则退出
+            done &
+EOF
+        return 0  # 已有权限，直接返回成功，不输出任何提示
+    fi
+
+
+    # 只有在需要授权时才显示提示信息
     echo -e "${YELLOW}===============================================================${NC}"
     echo -e "${YELLOW}⚠️  需要系统权限以执行内核管理操作${NC}"
     echo -e "${YELLOW}===============================================================${NC}"
@@ -324,6 +349,7 @@ show_status() {
 #========================
 show_list_backups() {
     show_title
+    show_separator
     echo -e "${CYAN}[功能] 列出所有备份内核${NC}"
     show_separator
 
@@ -383,6 +409,7 @@ show_list_backups() {
 #========================
 switch_core() {
     show_title
+    show_separator
     echo -e "${CYAN}[功能] 切换内核版本${NC}"
     show_separator
 
@@ -532,8 +559,6 @@ install_core() {
         return 1
     fi
 
-    echo -e "[信息] 版本信息: ${GREEN}$VERSION_INFO${NC}"
-
     # 解析版本号
     if [ "$VERSION_BRANCH" = "Prerelease-Alpha" ]; then
         VERSION_HASH=$(echo "$VERSION_INFO" | grep -oE 'alpha(-smart)?-[0-9a-f]+' | head -1)
@@ -541,7 +566,7 @@ install_core() {
         VERSION_HASH=$(echo "$VERSION_INFO" | head -1)
     fi
 
-    echo -e "[信息] 解析版本号: ${RED}$VERSION_HASH${NC}"
+    echo -e "[信息] 版本信息: ${GREEN}$VERSION_HASH${NC}"
 
     # 检测架构
     ARCH_RAW="$(uname -m)"
@@ -574,22 +599,29 @@ install_core() {
         return
     fi
 
-    # 备份当前内核
-    TIMESTAMP=$(date +%Y%m%d_%H%M%S)
-    BACKUP_FILE="mihomo.backup.${VERSION}.${TIMESTAMP}"
-
-    if [ -f "$ACTIVE_CORE" ]; then
-        cp "$ACTIVE_CORE" "$BACKUP_FILE"
-        echo -e "[步骤] 已备份当前内核 -> ${YELLOW}$BACKUP_FILE${NC}"
-    else
-        echo -e "[步骤] 当前无内核文件，跳过备份"
-    fi
-
     # 下载并安装
     TMP_FILE="$(mktemp)"
     echo -e "${BLUE}[步骤] 正在下载内核 (可能需要几分钟)...${NC}"
 
-    if curl -fL "$DOWNLOAD_URL" -o "$TMP_FILE" -#; then
+    # 增加下载重试机制（最多3次）
+    DOWNLOAD_SUCCESS=0
+    MAX_RETRIES=3
+    RETRY_COUNT=0
+
+    while [ $RETRY_COUNT -lt $MAX_RETRIES ]; do
+        if curl -fL "$DOWNLOAD_URL" -o "$TMP_FILE" -#; then
+            DOWNLOAD_SUCCESS=1
+            break
+        else
+            RETRY_COUNT=$((RETRY_COUNT + 1))
+            if [ $RETRY_COUNT -lt $MAX_RETRIES ]; then
+                echo -e "${YELLOW}[重试] 下载失败，正在进行第 ${RETRY_COUNT}/$MAX_RETRIES 次重试...${NC}"
+                sleep 5  # 等待5秒后重试
+            fi
+        fi
+    done
+
+    if [ $DOWNLOAD_SUCCESS -eq 1 ]; then
         echo -e "${GREEN}[成功] 下载完成${NC}"
 
         echo -e "${BLUE}[步骤] 正在解压内核...${NC}"
@@ -597,13 +629,19 @@ install_core() {
             chmod +x "$ACTIVE_CORE"
             rm -f "$TMP_FILE"
 
+            # 备份新安装的内核（无论是否是首次安装）
+            TIMESTAMP=$(date +%Y%m%d_%H%M%S)
+            BACKUP_FILE="mihomo.backup.${VERSION}.${TIMESTAMP}"
+            cp "$ACTIVE_CORE" "$BACKUP_FILE"
+            echo -e "[步骤] 已备份新安装的内核 -> ${YELLOW}$BACKUP_FILE${NC}"
+
             echo -e "${GREEN}[完成] 内核安装成功${NC}"
         else
             echo -e "${RED}[错误] 解压失败${NC}"
             rm -f "$TMP_FILE"
         fi
     else
-        echo -e "${RED}[错误] 下载失败${NC}"
+        echo -e "${RED}[错误] 下载失败，已尝试 ${MAX_RETRIES} 次${NC}"
         rm -f "$TMP_FILE"
     fi
 
@@ -624,21 +662,20 @@ get_mihomo_version() {
         echo "未安装"
     fi
 }
-
-#========================
-# 启动 Mihomo 内核
-#========================
 start_mihomo_kernel() {
     show_title
+
+    # 验证用户权限
+    if ! request_sudo_permission; then
+        wait_for_key
+        return
+    fi
+
+    show_separator
     echo -e "${CYAN}[功能] 启动 Mihomo 内核${NC}"
     show_separator
 
     if ! require_core_dir; then
-        return
-    fi
-
-    # 确保有sudo权限
-    if ! request_sudo_permission; then
         return
     fi
 
@@ -649,7 +686,7 @@ start_mihomo_kernel() {
         return
     fi
 
-    echo -e "${BLUE}[步骤] 正在启动 Mihomo 内核...${NC}"
+    echo -e "${BLUE}[步骤] 启动 Mihomo 内核前检查...${NC}"
 
     # 检查内核文件是否存在且可执行
     if [ ! -f "$ACTIVE_CORE" ]; then
@@ -669,69 +706,80 @@ start_mihomo_kernel() {
         fi
     fi
 
-    # 配置文件设置
+    # 配置文件检查 - 增加更详细的检查逻辑
     CONFIG_PATH="$CLASHFOX_CONFIG_DIR/default.yaml"
-    if [ -f "$CONFIG_PATH" ]; then
-        CONFIG_OPTION="-f $CONFIG_PATH"
-        echo -e "${GREEN}[信息] 将使用配置文件:${NC} $CONFIG_PATH"
-    else
-        echo -e "${RED}[错误] 配置文件不存在:${NC} $CONFIG_PATH"
-        wait_for_key
-        return
-    fi
 
-    # 数据目录设置
-    CONFIG_PATH="$CLASHFOX_CONFIG_DIR/default.yaml"
-    if [ -f "$CONFIG_PATH" ]; then
-        CONFIG_OPTION="-f $CONFIG_PATH"
-        echo -e "${GREEN}[信息] 将使用配置文件:${NC} $CONFIG_PATH"
-    else
-        echo -e "${RED}[错误] 配置文件不存在:${NC} $CONFIG_PATH"
-        wait_for_key
-        return
-    fi
+    # 检查默认配置文件是否存在
+    if [ ! -f "$CONFIG_PATH" ]; then
+        echo -e "${YELLOW}[错误] 默认配置文件不存在:${NC} $CONFIG_PATH"
+        echo -e "${BLUE}[步骤] 检查配置目录中的其他配置文件...${NC}"
 
-    # 数据目录设置
-    if [ -d "$CLASHFOX_DATA_DIR" ]; then
-        DATA_OPTION="-d $CLASHFOX_DATA_DIR"
-        echo -e "${GREEN}[信息] 将使用数据目录:${NC} $CLASHFOX_DATA_DIR"
-    else
-        echo -e "${RED}[错误] 数据目录不存在:${NC} $CLASHFOX_DATA_DIR"
-        wait_for_key
-        return
-    fi
+        # 列出配置目录中的所有yaml文件
+        CONFIG_FILES=$(find "$CLASHFOX_CONFIG_DIR" -name "*.yaml" -o -name "*.yml" -o -name "*.json" 2>/dev/null)
 
-    # 日志文件设置
-    LOG_PATH="$CLASHFOX_LOG_DIR/clashfox.log"
-    LOG_DIR=$(dirname "$LOG_PATH")
-    if [ ! -d "$LOG_DIR" ]; then
-        echo -e "${BLUE}[步骤] 创建日志目录...${NC}"
-        mkdir -p "$LOG_DIR"
-        if [ $? -ne 0 ]; then
-            echo -e "${RED}[错误] 创建日志目录失败${NC}"
+        if [ -z "$CONFIG_FILES" ]; then
+            echo -e "${RED}[错误] 配置目录中没有找到任何配置文件${NC}"
+            echo -e "${YELLOW}[提示] 请将配置文件放置在 $CLASHFOX_CONFIG_DIR 目录下${NC}"
             wait_for_key
             return
         fi
-        echo -e "${GREEN}[成功] 日志目录已创建:${NC} $LOG_DIR"
+
+        echo -e "${BLUE}可用的配置文件:${NC}"
+        echo "序号 | 配置文件路径"
+        show_separator
+
+        # 将配置文件列表转换为数组并显示
+        IFS=$'\n' read -r -d '' -a CONFIG_FILE_ARRAY <<< "$CONFIG_FILES"
+        for i in "${!CONFIG_FILE_ARRAY[@]}"; do
+            echo -e "  ${BLUE}$((i+1)))${NC} ${CONFIG_FILE_ARRAY[$i]}"
+        done
+
+        # 让用户选择配置文件
+        echo ""
+        read -p "请选择要使用的配置文件序号 (0 表示取消): " CONFIG_CHOICE
+
+        if [ "$CONFIG_CHOICE" -eq 0 ] 2>/dev/null; then
+            echo -e "${YELLOW}[提示] 操作已取消${NC}"
+            wait_for_key
+            return
+        elif [ "$CONFIG_CHOICE" -ge 1 ] && [ "$CONFIG_CHOICE" -le "${#CONFIG_FILE_ARRAY[@]}" ] 2>/dev/null; then
+            CONFIG_PATH="${CONFIG_FILE_ARRAY[$((CONFIG_CHOICE-1))]}"
+            echo -e "${GREEN}[选择] 将使用配置文件:${NC} $CONFIG_PATH"
+        else
+            echo -e "${RED}[错误] 无效的选择${NC}"
+            wait_for_key
+            return
+        fi
     fi
 
-    echo -e "${GREEN}[信息] 将使用日志文件:${NC} $LOG_PATH"
+    # 设置配置文件选项
+    CONFIG_OPTION="-f $CONFIG_PATH"
+
+    # 检查配置文件是否可读
+    if [ ! -r "$CONFIG_PATH" ]; then
+        echo -e "${RED}[错误] 配置文件不可读:${NC} $CONFIG_PATH"
+        echo -e "${YELLOW}[提示] 请检查配置文件的权限设置${NC}"
+        wait_for_key
+        return
+    fi
+
+    # 检查配置文件是否非空
+    if [ ! -s "$CONFIG_PATH" ]; then
+        echo -e "${RED}[错误] 配置文件为空:${NC} $CONFIG_PATH"
+        echo -e "${YELLOW}[提示] 请确保配置文件包含有效的配置内容${NC}"
+        wait_for_key
+        return
+    fi
+
+    echo -e "${GREEN}[步骤] 将使用配置文件:${NC} $CONFIG_PATH"
 
     # 启动内核
-    echo ""
     echo -e "${BLUE}[步骤] 正在启动内核进程...${NC}"
-    sudo nohup ./$ACTIVE_CORE $CONFIG_OPTION $DATA_OPTION >> $LOG_PATH 2>&1 &
-    echo -e "${GREEN}[信息] 启动命令:${NC} nohup ./$ACTIVE_CORE $CONFIG_OPTION $DATA_OPTION >> $LOG_PATH 2>&1 &"
+    sudo nohup ./$ACTIVE_CORE $CONFIG_OPTION -d $CLASHFOX_DATA_DIR >> "$CLASHFOX_LOG_DIR/clashfox.log" 2>&1 &
+    echo -e "${GREEN}[信息] 启动命令:${NC} nohup ./$ACTIVE_CORE $CONFIG_OPTION -d $CLASHFOX_DATA_DIR >> $CLASHFOX_LOG_DIR/clashfox.log 2>&1 &"
     PID=$!
 
     sleep 5
-
-    # 创建runtime目录（如果不存在）
-    PID_DIR=$(dirname "$CLASHFOX_PID_DIR")
-    if [ ! -d "$PID_DIR" ]; then
-        echo -e "${BLUE}[步骤] 创建runtime目录...${NC}"
-        mkdir -p "$PID_DIR"
-    fi
 
     # 将PID写入文件
     echo $PID > "$CLASHFOX_PID_DIR/clashfox.pid"
@@ -744,13 +792,8 @@ start_mihomo_kernel() {
     if ps -p $PID > /dev/null 2>&1; then
         echo -e "${GREEN}[成功] Mihomo 内核已启动${NC}"
         echo -e "${GREEN}[信息] 进程 ID:${NC} $PID"
-        echo -e "${GREEN}[信息] 配置文件:${NC} $CONFIG_PATH"
-        echo -e "${GREEN}[信息] 数据目录:${NC} $CLASHFOX_DATA_DIR"
-        echo -e "${GREEN}[信息] 日志文件:${NC} $LOG_PATH"
     else
         echo -e "${RED}[错误] Mihomo 内核启动失败${NC}"
-        echo -e "${YELLOW}[提示] 请检查配置文件是否正确${NC}"
-        echo -e "${YELLOW}[提示] 可以使用 '显示当前状态' 功能检查配置文件${NC}"
     fi
 
     wait_for_key
@@ -761,15 +804,18 @@ start_mihomo_kernel() {
 #========================
 kill_mihomo_kernel() {
     show_title
+
+    # 验证用户权限
+    if ! request_sudo_permission; then
+        wait_for_key
+        continue
+    fi
+
+    show_separator
     echo -e "${CYAN}[功能] 关闭 Mihomo 内核${NC}"
     show_separator
 
     if ! require_core_dir; then
-        return
-    fi
-
-    # 确保有sudo权限
-    if ! request_sudo_permission; then
         return
     fi
 
@@ -832,15 +878,18 @@ kill_mihomo_kernel() {
 #========================
 restart_mihomo_kernel() {
     show_title
+
+    # 验证用户权限
+    if ! request_sudo_permission; then
+        wait_for_key
+        continue
+    fi
+
+    show_separator
     echo -e "${CYAN}[功能] 重启 Mihomo 内核${NC}"
     show_separator
 
     if ! require_core_dir; then
-        return
-    fi
-
-    # 确保有sudo权限
-    if ! request_sudo_permission; then
         return
     fi
 
@@ -860,14 +909,16 @@ restart_mihomo_kernel() {
 manage_kernel_menu() {
     while true; do
         show_title
-        echo -e "${CYAN}[功能] 内核控制${NC}"
-        show_separator
 
         # 验证用户权限
         if ! request_sudo_permission; then
             wait_for_key
             continue
         fi
+
+        show_separator
+        echo -e "${CYAN}[功能] 内核控制${NC}"
+        show_separator
 
         # 显示当前内核状态
         MIHOMO_STATUS=$(check_mihomo_status)
@@ -913,6 +964,7 @@ manage_kernel_menu() {
 #========================
 show_logs() {
     show_title
+    show_separator
     echo -e "${CYAN}[功能] 查看 Mihomo 内核日志${NC}"
     show_separator
 
@@ -979,22 +1031,29 @@ show_logs() {
 #========================
 show_help() {
     show_title
-    echo -e "${CYAN}[功能] 帮助信息${NC}"
     show_separator
-    echo -e "${BLUE}功能说明:${NC}"
-    echo "  1. 安装/更新 Mihomo 内核 - 从 GitHub 下载最新内核并安装"
-    echo "  2. 内核控制 (启动/关闭/重启) - 管理内核的运行状态"
-    echo "  3. 查看当前状态 - 显示当前内核版本和最新备份信息"
-    echo "  4. 切换内核版本 - 在已备份的内核版本之间切换"
-    echo "  5. 列出所有备份 - 查看所有已备份的内核版本"
-    echo "  6. 查看内核日志"
-    echo "  7. 清除日志"
-    echo "  6. 显示帮助信息 - 显示此帮助内容"
-    echo "  0. 退出程序 - 退出内核管理器"
+    echo -e "${CYAN}[帮助] ClashFox Mihomo Toolkit 帮助信息${NC}"
+    show_separator
+    echo -e "${BLUE}命令行参数:${NC}"
+    echo -e "  ${BLUE}-d|--directory <路径>${NC} 自定义 ClashFox 安装目录"
+    echo -e "  ${BLUE}status${NC}             查看当前内核状态"
+    echo -e "  ${BLUE}list${NC}               列出所有内核备份"
+    echo -e "  ${BLUE}switch${NC}             切换内核版本"
+    echo -e "  ${BLUE}logs|log${NC}           查看内核日志"
+    echo -e "  ${BLUE}clean|clear${NC}        清除日志"
+    echo -e "  ${BLUE}help|-h|--help${NC}     显示帮助信息"
+    echo -e "  ${BLUE}version|-v|--version${NC} 显示版本信息"
     echo ""
-    echo -e "${BLUE}使用提示:${NC}"
-    echo "  - 按数字键选择功能，然后按 Enter 键"
-    echo "  - 在任何界面按 Enter 键返回上一级"
+    echo -e "${BLUE}交互式菜单:${NC}"
+    echo -e "  ${BLUE}1)${NC} 安装/更新 Mihomo 内核"
+    echo -e "  ${BLUE}2)${NC} 内核控制(启动/关闭/重启)"
+    echo -e "  ${BLUE}3)${NC} 查看当前状态"
+    echo -e "  ${BLUE}4)${NC} 切换内核版本"
+    echo -e "  ${BLUE}5)${NC} 列出所有备份"
+    echo -e "  ${BLUE}6)${NC} 查看内核日志"
+    echo -e "  ${BLUE}7)${NC} 清除日志"
+    echo -e "  ${BLUE}8)${NC} 显示帮助信息"
+    echo -e "  ${BLUE}0)${NC} 退出程序"
     echo ""
     echo -e "${YELLOW}[提示] 此工具不仅负责内核版本管理，还可以控制内核的运行状态（启动/关闭/重启）${NC}"
 
@@ -1006,6 +1065,7 @@ show_help() {
 #========================
 clean_logs() {
     show_title
+    show_separator
     echo -e "${CYAN}[功能] 清理旧日志文件${NC}"
     show_separator
 
@@ -1105,7 +1165,9 @@ rotate_logs() {
 #========================
 show_main_menu() {
     show_title
+    show_separator
     echo -e "${CYAN}[状态] 当前内核信息${NC}"
+    show_separator
     # Mihomo 状态
     MIHOMO_STATUS=$(check_mihomo_status)
     if [ "$MIHOMO_STATUS" = "已运行" ]; then
@@ -1116,15 +1178,17 @@ show_main_menu() {
     # Mihomo 版本
     MIHOMO_VERSION=$(get_mihomo_version)
     echo -e "Mihomo Kernel：${CYAN}$MIHOMO_VERSION${NC}"
+    # 配置文件状态
     if [ -f "$CLASHFOX_CONFIG_DIR/default.yaml" ]; then
         echo -e "Mihomo Config: ${GREEN}$CLASHFOX_CONFIG_DIR/default.yaml${NC}"
     else
-        echo -e "Mihomo Config: ${YELLOW}未找到${NC}"
+        echo -e "Mihomo Config: ${YELLOW}未找到 $CLASHFOX_CONFIG_DIR/default.yaml${NC}"
     fi
 
     echo ""
-
+    show_separator
     echo -e "${CYAN}[功能] 主菜单${NC}"
+    show_separator
     echo -e "${BLUE}请选择要执行的功能:${NC}"
     echo -e "  ${BLUE}1)${NC} 安装/更新 Mihomo 内核         ${BLUE}2)${NC} 内核控制(启动/关闭/重启) "
     echo -e "  ${BLUE}3)${NC} 查看当前状态                  ${BLUE}4)${NC} 切换内核版本"
@@ -1140,24 +1204,69 @@ show_main_menu() {
 cleanup() {
     # 只在有实际清理操作时才输出日志
     if [ -n "$LOG_CHECKER_PID" ]; then
-        # 静默终止日志检查后台进程
+        # 终止日志检查后台进程
+        echo -e "${BLUE}[清理] 正在终止日志检查进程 (PID: $LOG_CHECKER_PID)...${NC}"
+
+        # 先尝试正常终止
         kill "$LOG_CHECKER_PID" 2>/dev/null
+
+        # 等待进程终止
+        local timeout=5
+        while ps -p "$LOG_CHECKER_PID" > /dev/null 2>&1 && [ $timeout -gt 0 ]; do
+            sleep 1
+            ((timeout--))
+        done
+
+        # 如果进程仍然存在，尝试强制终止
+        if ps -p "$LOG_CHECKER_PID" > /dev/null 2>&1; then
+            echo -e "${YELLOW}[清理] 尝试强制终止日志检查进程...${NC}"
+            kill -9 "$LOG_CHECKER_PID" 2>/dev/null
+        fi
+
+        # 等待进程终止
         wait "$LOG_CHECKER_PID" 2>/dev/null
 
-        # 仅输出一条简洁的成功信息
-        echo -e "\n${GREEN}[清理] 日志检查进程已终止${NC}"
+        # 输出终止结果
+        if ps -p "$LOG_CHECKER_PID" > /dev/null 2>&1; then
+            echo -e "${RED}[清理] 日志检查进程终止失败 (PID: $LOG_CHECKER_PID)${NC}"
+        else
+            echo -e "${GREEN}[清理] 日志检查进程已终止${NC}"
+        fi
     fi
 }
 
-# 注册退出处理函数 - 优化版本
-trap 'cleanup; exit 1' SIGINT SIGTERM SIGTSTP
-trap cleanup EXIT
+# 注册退出处理函数 - 只处理异常退出
+trap 'cleanup; echo -e "${RED}[退出] 程序已异常终止${NC}"; exit 1' SIGINT SIGTERM SIGTSTP
 
 #========================
 # 命令行参数解析
 #========================
 parse_arguments() {
     case "$1" in
+        -d|--directory)
+            shift
+            if [ -n "$1" ]; then
+                # 确保目录以ClashFox结尾
+                if [[ "$1" != *"/ClashFox"* ]]; then
+                    if [[ "$1" == */ ]]; then
+                        CLASHFOX_DIR="${1}ClashFox"
+                    else
+                        CLASHFOX_DIR="${1}/ClashFox"
+                    fi
+                else
+                    CLASHFOX_DIR="$1"
+                fi
+                set_clashfox_subdirectories
+
+                # 保存选择的目录
+                save_directory
+
+                shift
+            else
+                echo -e "${RED}[错误] -d/--directory 参数需要指定目录路径${NC}"
+                exit 1
+            fi
+            ;;
         status)
             echo -e "${BLUE}[命令行] 查看当前状态...${NC}"
             show_status
@@ -1195,10 +1304,57 @@ parse_arguments() {
             if [ -n "$1" ]; then
                 echo -e "${RED}[错误] 未知命令: $1${NC}"
                 echo -e "${YELLOW}可用命令: status, list, switch, logs, clean, help, version${NC}"
+                echo -e "${YELLOW}可用参数: -d/--directory <路径> - 自定义 ClashFox 安装目录${NC}"
                 exit 1
             fi
             ;;
     esac
+}
+
+#========================
+# 读取保存的自定义目录
+#========================
+read_saved_directory() {
+    # 配置文件路径
+    CONFIG_FILE="$HOME/.clashfox/config"
+
+    # 如果配置文件存在且可读
+    if [ -f "$CONFIG_FILE" ] && [ -r "$CONFIG_FILE" ]; then
+        # 读取保存的目录
+        SAVED_DIR=$(cat "$CONFIG_FILE")
+
+        # 验证保存的目录是否有效
+        if [ -n "$SAVED_DIR" ]; then
+            CLASHFOX_DIR="$SAVED_DIR"
+            set_clashfox_subdirectories
+            echo -e "${GREEN}[配置] 已加载保存的目录: $CLASHFOX_DIR${NC}"
+            return 0
+        fi
+    fi
+
+    # 没有找到有效配置，使用默认目录
+    echo -e "${YELLOW}[配置] 未找到保存的目录，将使用默认目录: $CLASHFOX_DIR${NC}"
+    return 1
+}
+
+#========================
+# 保存自定义目录到配置文件
+#========================
+save_directory() {
+    # 配置文件路径
+    CONFIG_FILE="$HOME/.clashfox/config"
+
+    # 创建配置文件目录
+    mkdir -p "$(dirname "$CONFIG_FILE")"
+
+    # 保存当前目录到配置文件
+    echo "$CLASHFOX_DIR" > "$CONFIG_FILE"
+
+    # 设置权限
+    chmod 600 "$CONFIG_FILE"
+
+    echo -e "${GREEN}[配置] 已保存目录到配置文件: $CONFIG_FILE${NC}"
+    return 0
 }
 
 #========================
@@ -1212,15 +1368,59 @@ main() {
         parse_arguments "$@"
     fi
 
+    # 程序启动时请求一次sudo权限
+    if ! request_sudo_permission; then
+        wait_for_key
+        continue
+    fi
+# 交互式询问用户是否修改默认目录 - 仅首次使用时提示
+if [ ! -d "$CLASHFOX_DIR" ]; then
+    show_separator
+    echo -e "${BLUE}[初始化] 选择 ClashFox 安装目录${NC}"
+    show_separator
+    echo -e "当前默认安装目录: ${GREEN}$CLASHFOX_DIR${NC}"
+    echo ""
+    read -p "是否使用默认目录? (y/n): " USE_DEFAULT_DIR
+
+    if [[ ! "$USE_DEFAULT_DIR" =~ ^[Yy]$ ]]; then
+        read -p "请输入自定义安装目录: " CUSTOM_DIR
+
+        # 验证目录路径
+        if [ -n "$CUSTOM_DIR" ]; then
+            # 确保目录以ClashFox结尾
+            if [[ "$CUSTOM_DIR" != *"/ClashFox"* ]]; then
+                if [[ "$CUSTOM_DIR" == */ ]]; then
+                    CLASHFOX_DIR="${CUSTOM_DIR}ClashFox"
+                else
+                    CLASHFOX_DIR="${CUSTOM_DIR}/ClashFox"
+                fi
+            else
+                CLASHFOX_DIR="$CUSTOM_DIR"
+            fi
+            set_clashfox_subdirectories
+            echo -e "${GREEN}[选择] 已设置 ClashFox 安装目录为: $CLASHFOX_DIR${NC}"
+
+            # 保存选择的目录
+            save_directory
+        else
+            echo -e "${YELLOW}[提示] 未输入有效目录，将使用默认目录: $CLASHFOX_DIR${NC}"
+        fi
+    else
+        echo -e "${GREEN}[选择] 将使用默认安装目录: $CLASHFOX_DIR${NC}"
+
+        # 保存选择的目录
+        save_directory
+    fi
+        echo ""
+        sleep 3
+    else
+        # 非首次使用，直接使用现有目录
+        set_clashfox_subdirectories
+        echo -e "${GREEN}[初始化] 使用现有安装目录: $CLASHFOX_DIR${NC}"
+    fi
+
     # 调用日志回滚
     rotate_logs
-
-    # 程序启动时请求一次sudo权限
-    echo -e "${BLUE}[初始化] 请求程序执行权限...${NC}"
-    if ! request_sudo_permission; then
-        echo -e "${RED}[错误] 授权失败，程序无法正常运行${NC}"
-        exit 1
-    fi
 
     # 确保所有必要目录都已创建
     if ! require_core_dir; then
@@ -1293,6 +1493,10 @@ main() {
                 show_help
                 ;;
             0)
+                # 先执行清理操作
+                cleanup
+
+                # 然后输出感谢信息，确保它是最后一行
                 echo -e "${GREEN}[退出] 感谢使用 ClashFox Mihomo 内核管理器${NC}"
                 exit 0
                 ;;
