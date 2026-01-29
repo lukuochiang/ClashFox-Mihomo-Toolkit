@@ -31,7 +31,7 @@
 # shc -f clashfox_mihomo_toolkit.sh -o ../shc/clashfox-installer && rm -f clashfox_mihomo_toolkit.sh.x.c
 SCRIPT_NAME="ClashFox Mihomo Toolkit"
 # 脚本版本号
-SCRIPT_VERSION="v1.2.2(23)"
+SCRIPT_VERSION="v1.2.2(25)"
 
 # ClashFox 默认目录 - 默认值，可通过命令行参数或交互方式修改
 CLASHFOX_DEFAULT_DIR="/Applications/ClashFox"
@@ -347,7 +347,6 @@ show_status() {
         fi
     fi
 
-    show_separator
     wait_for_key
 }
 
