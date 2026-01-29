@@ -1,3 +1,7 @@
+<div align="center">
+  <img src="screenshots/logo.png" alt="ClashFox Logo" width="200">
+</div>
+
 # ClashFox-Mihomo-Toolkit
 
 一个功能强大的 ClashFox Mihomo 内核管理工具集，提供完整的内核安装、配置、运行和监控功能。
@@ -68,6 +72,23 @@ chmod +x scripts/clashfox_mihomo_toolkit.sh
 ./scripts/clashfox_mihomo_toolkit.sh
 ```
 
+## 📸 预览截图
+
+### 主菜单界面
+
+![主菜单界面](screenshots/mian_menu.png)
+
+### 状态监控界面
+
+![状态监控界面](screenshots/status_interface.png)
+
+### 内核管理界面
+
+![内核管理界面](screenshots/core_management.png)
+
+### 日志查看界面
+
+![日志查看界面](screenshots/log_viewer.png)
 
 ## 常见问题
 
