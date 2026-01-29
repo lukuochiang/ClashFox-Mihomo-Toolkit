@@ -8,7 +8,7 @@
 
 # Author: Kuochiang Lu
 # Version: $SCRIPT_VERSION
-# Last Updated: 2026-01-27
+# Last Updated: 2026-01-29
 #
 # 描述：
 #   ClashFox mihomo Kernel Manager 是一个功能完整的 mihomo 内核管理工具，
@@ -31,7 +31,7 @@
 # shc -f clashfox_mihomo_toolkit.sh -o ../shc/clashfox-installer && rm -f clashfox_mihomo_toolkit.sh.x.c
 SCRIPT_NAME="ClashFox Mihomo Toolkit"
 # 脚本版本号
-SCRIPT_VERSION="v1.2.2(10)"
+SCRIPT_VERSION="v1.2.2(23)"
 
 # ClashFox 默认目录 - 默认值，可通过命令行参数或交互方式修改
 CLASHFOX_DEFAULT_DIR="/Applications/ClashFox"
@@ -64,16 +64,20 @@ GITHUB_USERS=("vernesong" "MetaCubeX")
 # 默认分支
 DEFAULT_BRANCH="Prerelease-Alpha"
 
-# 颜色
-RED='\033[0;31m'          # 红色 - 错误信息
-GREEN='\033[0;32m'        # 绿色 - 成功信息
-YELLOW='\033[1;33m'       # 黄色 - 提示和警告
-BLUE='\033[0;34m'         # 蓝色 - 主色调，用于标题和重要信息
-PURPLE='\033[0;35m'       # 紫色 - 强调信息
-CYAN='\033[0;36m'         # 青色 - 状态信息和功能说明
-NC='\033[0m'              # 重置颜色
+# 终端颜色定义 - 和谐专业版
+RED='\033[0;31m'          # 红色 - 错误信息（保持标准红色，确保警示性）
+GREEN='\033[0;32m'        # 绿色 - 成功信息（保持标准绿色，确保清晰识别）
+YELLOW='\033[0;33m'       # 黄色 - 提示和警告（使用标准黄色，避免过于刺眼）
+BLUE='\033[1;34m'         # 亮蓝色 - 主色调，用于标题和重要信息（突出但不刺眼）
+CYAN='\033[0;36m'         # 青色 - 状态信息和功能说明（保持专业感）
+PURPLE='\033[0;35m'       # 紫色 - 强调信息（降低亮度，避免与其他颜色冲突）
+GRAY='\033[0;37m'         # 灰色 - 辅助信息（新增，用于次要文本）
+WHITE='\033[1;37m'        # 白色 - 强调文本（新增，用于需要突出的普通文本）
+NC='\033[0m'              # 重置颜色（保持不变）
 
-# 清屏命令
+#========================
+# 清屏函数
+#========================
 clear_screen() {
     clear
 }
@@ -83,12 +87,15 @@ clear_screen() {
 #========================
 show_title() {
     clear_screen
-    echo -e "${CYAN}===============================================================${NC}"
-    echo -e "${CYAN}                    $SCRIPT_NAME${NC}"
-    echo -e "${CYAN}===============================================================${NC}"
-    echo -e "${CYAN}版本: $SCRIPT_VERSION${NC}"
+
+    echo -e "${PURPLE}========================================================================${NC}"
+    echo -e "${PURPLE}                     🦊  $SCRIPT_NAME 🦊${NC}"
+    echo -e "${PURPLE}========================================================================${NC}"
+    echo -e "${CYAN}[版本]: ${WHITE}$SCRIPT_VERSION${NC}"
     echo ""
-    echo -e "${YELLOW}[提示] 欢迎 $USER 使用 ${SCRIPT_NAME}${NC}"
+
+    # 显示欢迎提示
+    echo -e "${YELLOW}[提示] 欢迎 ${GRAY}$USER ${YELLOW}使用 ${SCRIPT_NAME}${NC}"
     echo ""
 }
 
@@ -126,11 +133,11 @@ EOF
 
 
     # 只有在需要授权时才显示提示信息
-    echo -e "${YELLOW}===============================================================${NC}"
-    echo -e "${YELLOW}⚠️  需要系统权限以执行内核管理操作${NC}"
-    echo -e "${YELLOW}===============================================================${NC}"
-    echo -e "${CYAN}说明: 内核启动/关闭/重启/状态等操作需要 sudo 权限${NC}"
-    echo -e "${CYAN}授权: 请输入您的 macOS 用户密码以继续${NC}"
+    echo -e "${RED}========================================================================${NC}"
+    echo -e "${RED}⚠️  需要系统权限以执行内核管理操作${NC}"
+    echo -e "${RED}========================================================================${NC}"
+    echo -e "${RED}说明: 内核启动/关闭/重启/状态等操作需要 sudo 权限${NC}"
+    echo -e "${RED}授权: 请输入您的 macOS 用户密码以继续${NC}"
     echo ""
 
     if sudo -v 2>/dev/null; then
@@ -1032,28 +1039,25 @@ show_logs() {
 show_help() {
     show_title
     show_separator
-    echo -e "${CYAN}[帮助] ClashFox Mihomo Toolkit 帮助信息${NC}"
+    echo -e "${CYAN}[帮助] 帮助信息${NC}"
     show_separator
     echo -e "${BLUE}命令行参数:${NC}"
-    echo -e "  ${BLUE}-d|--directory <路径>${NC} 自定义 ClashFox 安装目录"
-    echo -e "  ${BLUE}status${NC}             查看当前内核状态"
-    echo -e "  ${BLUE}list${NC}               列出所有内核备份"
-    echo -e "  ${BLUE}switch${NC}             切换内核版本"
-    echo -e "  ${BLUE}logs|log${NC}           查看内核日志"
-    echo -e "  ${BLUE}clean|clear${NC}        清除日志"
-    echo -e "  ${BLUE}help|-h|--help${NC}     显示帮助信息"
-    echo -e "  ${BLUE}version|-v|--version${NC} 显示版本信息"
+    echo -e "  ${BLUE}-d|--directory <路径>${NC}  ${GRAY}自定义 ClashFox 安装目录"
+    echo -e "  ${BLUE}status${NC}                 ${GRAY}查看当前内核状态"
+    echo -e "  ${BLUE}list${NC}                   ${GRAY}列出所有内核备份"
+    echo -e "  ${BLUE}switch${NC}                 ${GRAY}切换内核版本"
+    echo -e "  ${BLUE}logs|log${NC}               ${GRAY}查看内核日志"
+    echo -e "  ${BLUE}clean|clear${NC}            ${GRAY}清除日志"
+    echo -e "  ${BLUE}help|-h${NC}                ${GRAY}显示帮助信息"
+    echo -e "  ${BLUE}version|-v${NC}             ${GRAY}显示版本信息"
     echo ""
     echo -e "${BLUE}交互式菜单:${NC}"
-    echo -e "  ${BLUE}1)${NC} 安装/更新 Mihomo 内核"
-    echo -e "  ${BLUE}2)${NC} 内核控制(启动/关闭/重启)"
-    echo -e "  ${BLUE}3)${NC} 查看当前状态"
-    echo -e "  ${BLUE}4)${NC} 切换内核版本"
-    echo -e "  ${BLUE}5)${NC} 列出所有备份"
-    echo -e "  ${BLUE}6)${NC} 查看内核日志"
-    echo -e "  ${BLUE}7)${NC} 清除日志"
-    echo -e "  ${BLUE}8)${NC} 显示帮助信息"
-    echo -e "  ${BLUE}0)${NC} 退出程序"
+    # 一行显示2个选项，使用printf确保对齐
+    echo -e "  ${BLUE}1)${NC} ${GRAY}安装/更新 Mihomo 内核         ${BLUE}2)${NC} ${GRAY}内核控制(启动/关闭/重启)"
+    echo -e "  ${BLUE}3)${NC} ${GRAY}查看当前状态                  ${BLUE}4)${NC} ${GRAY}切换内核版本"
+    echo -e "  ${BLUE}5)${NC} ${GRAY}列出所有备份                  ${BLUE}6)${NC} ${GRAY}查看内核日志"
+    echo -e "  ${BLUE}7)${NC} ${GRAY}清除日志                      ${BLUE}8)${NC} ${GRAY}显示帮助信息"
+    echo -e "  ${BLUE}0)${NC} ${GRAY}退出程序${NC}"
     echo ""
     echo -e "${YELLOW}[提示] 此工具不仅负责内核版本管理，还可以控制内核的运行状态（启动/关闭/重启）${NC}"
 
@@ -1292,11 +1296,11 @@ parse_arguments() {
             clean_logs
             exit 0
             ;;
-        help|-h|--help)
+        help|-h)
             show_help
             exit 0
             ;;
-        version|-v|--version)
+        version|-v)
             show_title
             exit 0
             ;;
