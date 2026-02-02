@@ -34,7 +34,7 @@ SCRIPT_NAME="ClashFox Mihomo Toolkit"
 SCRIPT_VERSION="v1.2.2(38)"
 
 # ClashFox 默认目录 - 默认值，可通过命令行参数或交互方式修改
-CLASHFOX_DEFAULT_DIR="/Applications/ClashFox"
+CLASHFOX_DEFAULT_DIR="/Applications/ClashFox.app"
 CLASHFOX_DIR="$CLASHFOX_DEFAULT_DIR"
 
 # ClashFox 子目录定义
