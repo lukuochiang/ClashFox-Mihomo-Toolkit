@@ -7,8 +7,8 @@
 # -----------------------------------------------------------------------------
 
 # Author: Kuochiang Lu
-# Version: v1.2.2(38)
-# Last Updated: 2026-02-02
+# Version: v1.2.2(40)
+# Last Updated: 2026-02-03
 #
 # 描述：
 #   ClashFox Mihomo Kernel Manager 是一个功能完整的 mihomo 内核管理工具，
@@ -31,7 +31,7 @@
 # shc -f clashfox_mihomo_toolkit.sh -o ../shc/clashfox-installer && rm -f clashfox_mihomo_toolkit.sh.x.c
 SCRIPT_NAME="ClashFox Mihomo Toolkit"
 # 脚本版本号
-SCRIPT_VERSION="v1.2.2(38)"
+SCRIPT_VERSION="v1.2.2(40)"
 
 # ClashFox 默认目录 - 默认值，可通过命令行参数或交互方式修改
 CLASHFOX_DEFAULT_DIR="/Applications/ClashFox.app"
@@ -1313,27 +1313,22 @@ parse_arguments() {
             fi
             ;;
         status)
-            log_fmt "${BLUE}[命令行] 查看当前状态..."
             show_status
             exit 0
             ;;
         list)
-            log_fmt "${BLUE}[命令行] 列出所有备份..."
             show_list_backups
             exit 0
             ;;
         switch)
-            log_fmt "${BLUE}[命令行] 切换内核版本..."
             switch_core
             exit 0
             ;;
         logs|log)
-            log_fmt "${BLUE}[命令行] 查看内核日志..."
             show_logs
             exit 0
             ;;
         clean|clear)
-            log_fmt "${BLUE}[命令行] 清除日志..."
             clean_logs
             exit 0
             ;;
