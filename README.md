@@ -111,6 +111,20 @@ chmod +x scripts/clashfox_mihomo_toolkit.sh
 ### 4. 如何手动备份配置？
 配置文件位于 `/Applications/ClashFox/config/default.yaml`，可以手动复制此文件进行备份。
 
+### 5. 为什么没有默认配置文件？
+为了保护用户隐私和配置安全，本工具默认不包含任何配置文件。用户需要根据自己的需求手动创建或导入配置文件。
+
+### 6. 如何添加配置文件？
+1. 配置文件应放在 `/Applications/ClashFox/config/` 目录下
+2. 默认使用 `default.yaml` 作为配置文件名
+3. 您可以：
+    - 从订阅链接导出配置并保存为 `default.yaml`
+    - 手动编写配置文件
+    - 复制已有的配置文件到该目录
+
+### 7. 配置文件格式有什么要求？
+配置文件必须是标准的 YAML 格式，并且符合 Mihomo 内核的配置规范。您可以参考官方文档或示例配置进行编写。
+
 ## 许可证
 
 本项目采用 MIT 许可证 - 查看 [LICENSE](LICENSE) 文件了解详情。
