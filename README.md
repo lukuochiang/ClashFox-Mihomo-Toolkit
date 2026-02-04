@@ -136,6 +136,10 @@ chmod +x scripts/clashfox_mihomo_toolkit.sh
 - [vernesong/mihomo](https://github.com/vernesong/mihomo)
 - [Zephyruso/zashboard](https://github.com/Zephyruso/zashboard)
 
+## Star History
+
+[![Star History Chart](https://api.star-history.com/svg?repos=lukuochiang/ClashFox-Mihomo-Toolkit&type=date&legend=top-left)](https://www.star-history.com/#lukuochiang/ClashFox-Mihomo-Toolkit&type=date&legend=top-left)
+
 ---
 
 **ClashFox-Mihomo-Toolkit** - 让 Mihomo 内核管理变得简单高效！
