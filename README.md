@@ -134,6 +134,7 @@ chmod +x scripts/clashfox_mihomo_toolkit.sh
 特别感谢以下项目和开发者：
 - [MetaCubeX/mihomo](https://github.com/MetaCubeX/mihomo)
 - [vernesong/mihomo](https://github.com/vernesong/mihomo)
+- [Zephyruso/zashboard](https://github.com/Zephyruso/zashboard)
 
 ---
 
