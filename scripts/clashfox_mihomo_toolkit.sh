@@ -2098,6 +2098,9 @@ clear_screen() {
 show_title() {
     clear_screen
 
+    log_fmt "${GRAY}$(get_system_status_line)${NC}"
+    log_blank
+
     log_fmt "${PURPLE}=============================================================================${NC}"
     log_fmt "${PURPLE}                         🦊  $SCRIPT_NAME 🦊${NC}"
     log_fmt "${PURPLE}=============================================================================${NC}"
@@ -2166,6 +2169,50 @@ pad_right() {
         return
     fi
     printf "%s%*s" "$s" "$((width - w))" ""
+}
+
+format_gb() {
+    local bytes="$1"
+    if command -v python3 >/dev/null 2>&1; then
+        python3 - "$bytes" <<'PY'
+import sys
+b = float(sys.argv[1] or 0)
+print(f"{b/1024/1024/1024:.1f}")
+PY
+        return
+    fi
+    awk -v b="$bytes" 'BEGIN { printf "%.1f", b/1024/1024/1024 }'
+}
+
+get_system_status_line() {
+    local model cpu_name cores mem_bytes mem_gb disk_kb disk_gb refresh os_ver
+    model=$(system_profiler SPHardwareDataType 2>/dev/null | awk -F": " '/Model Name/{print $2; exit}')
+    if [ -z "$model" ]; then
+        model=$(sysctl -n hw.model 2>/dev/null)
+    fi
+
+    cpu_name=$(sysctl -n machdep.cpu.brand_string 2>/dev/null | sed -E 's/\(R\)|\(TM\)//g; s/CPU//g; s/@.*//g; s/  +/ /g; s/^ //; s/ $//')
+    cores=$(sysctl -n hw.physicalcpu 2>/dev/null)
+    if [ -n "$cores" ] && [ -n "$cpu_name" ]; then
+        cpu_name="${cores}-Core ${cpu_name}"
+    fi
+
+    mem_bytes=$(sysctl -n hw.memsize 2>/dev/null)
+    mem_gb=$(format_gb "$mem_bytes")
+
+    disk_kb=$(df -k / 2>/dev/null | awk 'NR==2 {print $2}')
+    if [ -n "$disk_kb" ]; then
+        disk_gb=$(awk -v k="$disk_kb" 'BEGIN { printf "%.1f", k/1024/1024 }')
+    fi
+
+    os_ver=$(sw_vers -productVersion 2>/dev/null)
+
+    printf "${YELLOW}Status${NC} %s · %s · %s GB/%s GB · macOS %s" \
+        "${model:-Unknown}" \
+        "${cpu_name:-Unknown CPU}" \
+        "${mem_gb:-0.0}" \
+        "${disk_gb:-0.0}" \
+        "${os_ver:-Unknown}"
 }
 
 # Two-column menu output helper for alignment

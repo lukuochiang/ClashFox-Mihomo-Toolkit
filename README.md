@@ -9,8 +9,10 @@
 ## ⚡️一键安装
 
 ```bash
-bash -c 'set -e; t=$(mktemp -t clashfox_mihomo_toolkit); echo "正在下载 ClashFox Mihomo Toolkit..."; curl -fL --progress-bar "https://raw.githubusercontent.com/lukuochiang/ClashFox-Mihomo-Toolkit/refs/heads/main/scripts/clashfox_mihomo_toolkit.sh" -o "$t"; echo "正在安装内核..."; chmod +x "$t" && "$t"; echo "清理临时文件..."; rm -f "$t"; echo "安装完成！"'
+bash -c 'set -e; t=$(mktemp -t clashfox_mihomo_toolkit); echo "正在下载 ClashFox Mihomo Toolkit..."; curl -fL --progress-bar "https://raw.githubusercontent.com/lukuochiang/ClashFox-Mihomo-Toolkit/refs/heads/main/scripts/clashfox_mihomo_toolkit.sh" -o "$t"; echo "正在安装内核..."; chmod +x "$t" && "$t" --lang=zh; echo "清理临时文件..."; rm -f "$t"; echo "安装完成！"'
 ```
+特别说明：默认安装中文界面，如需要英文界面，请添加 `--lang=en` 参数，更多请参考[语言支持](#🌍-语言支持)。
+
 ### 目录说明
 
 - /Applications/ClashFox/ # 根目录
