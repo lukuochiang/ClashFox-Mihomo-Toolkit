@@ -7,7 +7,7 @@
 # -----------------------------------------------------------------------------
 
 # Author: Kuochiang Lu
-# Version: v1.2.3(36)
+# Version: v1.2.3(53)
 # Last Updated: 2026-02-03
 #
 # 描述：
@@ -31,14 +31,14 @@
 # shc -f clashfox_mihomo_toolkit.sh -o ../shc/clashfox-installer && rm -f clashfox_mihomo_toolkit.sh.x.c
 SCRIPT_NAME="ClashFox Mihomo Toolkit"
 # 脚本版本号
-SCRIPT_VERSION="v1.2.3(36)"
+SCRIPT_VERSION="v1.2.3(53)"
 
 # Language settings: set CLASHFOX_LANG=zh|en|auto (default: auto)
 CLASHFOX_LANG="${CLASHFOX_LANG:-auto}"
 
 detect_language() {
     case "$CLASHFOX_LANG" in
-        zh|en)
+        zh|en|ja|ko|fr|de|ru)
             echo "$CLASHFOX_LANG"
             return
             ;;
@@ -49,11 +49,36 @@ detect_language() {
     if [[ "$apple_locale" == zh* || "$apple_locale" == *zh* ]]; then
         echo "zh"
         return
+    elif [[ "$apple_locale" == ja* || "$apple_locale" == *ja* ]]; then
+        echo "ja"
+        return
+    elif [[ "$apple_locale" == ko* || "$apple_locale" == *ko* ]]; then
+        echo "ko"
+        return
+    elif [[ "$apple_locale" == fr* || "$apple_locale" == *fr* ]]; then
+        echo "fr"
+        return
+    elif [[ "$apple_locale" == de* || "$apple_locale" == *de* ]]; then
+        echo "de"
+        return
+    elif [[ "$apple_locale" == ru* || "$apple_locale" == *ru* ]]; then
+        echo "ru"
+        return
     fi
 
     local sys_lang="${LC_ALL:-${LANG:-}}"
     if [[ "$sys_lang" == zh* || "$sys_lang" == *zh* ]]; then
         echo "zh"
+    elif [[ "$sys_lang" == ja* || "$sys_lang" == *ja* ]]; then
+        echo "ja"
+    elif [[ "$sys_lang" == ko* || "$sys_lang" == *ko* ]]; then
+        echo "ko"
+    elif [[ "$sys_lang" == fr* || "$sys_lang" == *fr* ]]; then
+        echo "fr"
+    elif [[ "$sys_lang" == de* || "$sys_lang" == *de* ]]; then
+        echo "de"
+    elif [[ "$sys_lang" == ru* || "$sys_lang" == *ru* ]]; then
+        echo "ru"
     else
         echo "en"
     fi
@@ -248,7 +273,7 @@ tr_msg() {
                 MSG_HELP_TITLE) printf "帮助信息" ;;
                 MSG_HELP_ARGS) printf "命令行参数:" ;;
                 MSG_HELP_DIR_ARG) printf "  -d|--directory <路径>  自定义 ClashFox 安装目录" ;;
-                MSG_HELP_LANG_ARG) printf "  -l|--lang <zh|en|auto>  指定显示语言" ;;
+                MSG_HELP_LANG_ARG) printf "  -l|--lang <zh|en|ja|ko|fr|de|ru|auto>  指定显示语言" ;;
                 MSG_HELP_STATUS) printf "  status                 查看当前内核状态" ;;
                 MSG_HELP_LIST) printf "  list                   列出所有内核备份" ;;
                 MSG_HELP_SWITCH) printf "  switch                 切换内核版本" ;;
@@ -305,11 +330,11 @@ tr_msg() {
                 MSG_EXIT_ABNORMAL) printf "[退出] 程序已异常终止" ;;
 
                 MSG_ARG_DIR_REQUIRED) printf "-d/--directory 参数需要指定目录路径" ;;
-                MSG_ARG_LANG_REQUIRED) printf "-l/--lang 参数需要指定语言(zh|en|auto)" ;;
-                MSG_ARG_LANG_INVALID) printf "无效语言: %s (支持: zh|en|auto)" "$@" ;;
+                MSG_ARG_LANG_REQUIRED) printf "-l/--lang 参数需要指定语言(zh|en|ja|ko|fr|de|ru|auto)" ;;
+                MSG_ARG_LANG_INVALID) printf "无效语言: %s (支持: zh|en|ja|ko|fr|de|ru|auto)" "$@" ;;
                 MSG_UNKNOWN_COMMAND) printf "未知命令: %s" "$@" ;;
                 MSG_AVAILABLE_COMMANDS) printf "可用命令: status, list, switch, logs, clean, help, version" ;;
-                MSG_AVAILABLE_ARGS) printf "可用参数: -d/--directory <路径> - 自定义 ClashFox 安装目录; -l/--lang <zh|en|auto> - 指定显示语言" ;;
+                MSG_AVAILABLE_ARGS) printf "可用参数: -d/--directory <路径> - 自定义 ClashFox 安装目录; -l/--lang <zh|en|ja|ko|fr|de|ru|auto> - 指定显示语言" ;;
 
                 MSG_SAVED_DIR_LOADED) printf "已加载保存的目录: %s" "$@" ;;
                 MSG_SAVED_DIR_NOT_FOUND) printf "未找到保存的目录，将使用默认目录: %s" "$@" ;;
@@ -526,7 +551,7 @@ tr_msg() {
                 MSG_HELP_TITLE) printf "Help" ;;
                 MSG_HELP_ARGS) printf "Command-line arguments:" ;;
                 MSG_HELP_DIR_ARG) printf "  -d|--directory <path>  Custom ClashFox install directory" ;;
-                MSG_HELP_LANG_ARG) printf "  -l|--lang <zh|en|auto>  Set UI language" ;;
+                MSG_HELP_LANG_ARG) printf "  -l|--lang <zh|en|ja|ko|fr|de|ru|auto>  Set UI language" ;;
                 MSG_HELP_STATUS) printf "  status                 Show current kernel status" ;;
                 MSG_HELP_LIST) printf "  list                   List all kernel backups" ;;
                 MSG_HELP_SWITCH) printf "  switch                 Switch kernel version" ;;
@@ -583,11 +608,11 @@ tr_msg() {
                 MSG_EXIT_ABNORMAL) printf "[Exit] Program terminated unexpectedly" ;;
 
                 MSG_ARG_DIR_REQUIRED) printf "-d/--directory requires a directory path." ;;
-                MSG_ARG_LANG_REQUIRED) printf "-l/--lang requires a language (zh|en|auto)." ;;
-                MSG_ARG_LANG_INVALID) printf "Invalid language: %s (supported: zh|en|auto)" "$@" ;;
+                MSG_ARG_LANG_REQUIRED) printf "-l/--lang requires a language (zh|en|ja|ko|fr|de|ru|auto)." ;;
+                MSG_ARG_LANG_INVALID) printf "Invalid language: %s (supported: zh|en|ja|ko|fr|de|ru|auto)" "$@" ;;
                 MSG_UNKNOWN_COMMAND) printf "Unknown command: %s" "$@" ;;
                 MSG_AVAILABLE_COMMANDS) printf "Available commands: status, list, switch, logs, clean, help, version" ;;
-                MSG_AVAILABLE_ARGS) printf "Available args: -d/--directory <path> - custom ClashFox install dir; -l/--lang <zh|en|auto> - set UI language" ;;
+                MSG_AVAILABLE_ARGS) printf "Available args: -d/--directory <path> - custom ClashFox install dir; -l/--lang <zh|en|ja|ko|fr|de|ru|auto> - set UI language" ;;
 
                 MSG_SAVED_DIR_LOADED) printf "Loaded saved directory: %s" "$@" ;;
                 MSG_SAVED_DIR_NOT_FOUND) printf "No saved directory found. Using default: %s" "$@" ;;
@@ -615,6 +640,1396 @@ tr_msg() {
 
                 MSG_MIHOMO_CONFIG_NOT_FOUND) printf "Mihomo Config: [Not found %s]" "$@" ;;
                 MSG_MIHOMO_CONFIG_FOUND) printf "Mihomo Config: [%s]" "$@" ;;
+                MSG_MIHOMO_STATUS_RUNNING) printf "%s: [%s]" "$@" ;;
+                MSG_MIHOMO_STATUS_STOPPED) printf "%s: [%s]" "$@" ;;
+                MSG_MIHOMO_KERNEL_LINE) printf "%s: [%s]" "$@" ;;
+
+                *) printf "%s" "$key" ;;
+            esac
+            ;;
+        ja)
+            case "$key" in
+                TAG_SUCCESS) printf "成功" ;;
+                TAG_ERROR) printf "エラー" ;;
+                TAG_WARNING) printf "ヒント" ;;
+                TAG_VERSION) printf "バージョン" ;;
+                LABEL_FUNCTION) printf "機能" ;;
+                LABEL_STATUS) printf "状態" ;;
+                LABEL_HELP) printf "ヘルプ" ;;
+                LABEL_INIT) printf "初期化" ;;
+                LABEL_STEP) printf "手順" ;;
+                LABEL_INFO) printf "情報" ;;
+                LABEL_CLEANUP) printf "クリーンアップ" ;;
+                LABEL_OPTIONS) printf "オプション" ;;
+                LABEL_MENU) printf "メインメニュー" ;;
+
+                MSG_MACOS_ONLY) printf "このスクリプトは macOS のみ対応です。" ;;
+                MSG_WELCOME) printf "ようこそ %s、%s へ" "$@" ;;
+                MSG_PRESS_ENTER) printf "Enterキーを押して続行..." ;;
+                MSG_REQUIRE_SUDO_TITLE) printf "カーネル管理にはシステム権限が必要です。" ;;
+                MSG_REQUIRE_SUDO_DESC) printf "注: 起動/停止/再起動/状態の操作には sudo 権限が必要です。" ;;
+                MSG_REQUIRE_SUDO_PROMPT) printf "認証: 続行するには macOS のパスワードを入力してください。" ;;
+                MSG_SUDO_OK) printf "権限確認に成功しました。" ;;
+                MSG_SUDO_FAIL) printf "パスワード認証に失敗しました。再試行してください。" ;;
+
+                MSG_INIT_CHECK_DIRS) printf "[初期化] ディレクトリ構造を確認中..." ;;
+                MSG_INIT_SET_PERMS) printf "[初期化] ディレクトリ権限を設定中..." ;;
+                MSG_NEED_ADMIN) printf "ディレクトリ作成には管理者権限が必要です。" ;;
+                MSG_NO_PERMISSION) printf "権限が不足しています。ディレクトリを作成できません。" ;;
+                MSG_CORE_DIR_CREATE) printf "コアディレクトリを作成: %s" "$@" ;;
+                MSG_CORE_DIR_EXISTS) printf "コアディレクトリが存在します: %s" "$@" ;;
+                MSG_CONFIG_DIR_CREATE) printf "設定ディレクトリを作成: %s" "$@" ;;
+                MSG_CONFIG_DIR_EXISTS) printf "設定ディレクトリが存在します: %s" "$@" ;;
+                MSG_DATA_DIR_CREATE) printf "データディレクトリを作成: %s" "$@" ;;
+                MSG_DATA_DIR_EXISTS) printf "データディレクトリが存在します: %s" "$@" ;;
+                MSG_LOG_DIR_CREATE) printf "ログディレクトリを作成: %s" "$@" ;;
+                MSG_LOG_DIR_EXISTS) printf "ログディレクトリが存在します: %s" "$@" ;;
+                MSG_RUNTIME_DIR_CREATE) printf "ランタイムディレクトリを作成: %s" "$@" ;;
+                MSG_RUNTIME_DIR_EXISTS) printf "ランタイムディレクトリが存在します: %s" "$@" ;;
+                MSG_DIRS_PERMS_OK) printf "ディレクトリ権限を設定しました。" ;;
+
+                MSG_CORE_DIR_MISSING_CREATE) printf "コアディレクトリが見つかりません。構造を作成中..." ;;
+                MSG_DIR_CREATE_FAIL) printf "ディレクトリ構造の作成に失敗しました。" ;;
+                MSG_CORE_DIR_ENTER_FAIL) printf "コアディレクトリに入れません。" ;;
+
+                MSG_STATUS_STOPPED) printf "停止" ;;
+                MSG_STATUS_RUNNING) printf "稼働中" ;;
+                MSG_STATUS_LABEL) printf "Mihomo 状態" ;;
+                MSG_KERNEL_LABEL) printf "Mihomo カーネル" ;;
+                MSG_CONFIG_LABEL) printf "Mihomo 設定" ;;
+                MSG_CONFIG_NOT_FOUND) printf "見つかりません: %s" "$@" ;;
+                MSG_STATUS_SECTION) printf "• 状態:" ;;
+                MSG_KERNEL_FILES_SECTION) printf "• カーネルファイル情報:" ;;
+                MSG_BACKUP_SECTION) printf "• バックアップ情報:" ;;
+                MSG_KERNEL_FILE_OK) printf "✓ カーネルファイルあり" ;;
+                MSG_KERNEL_FILE_NOEXEC) printf "✗ カーネルファイルが実行不可" ;;
+                MSG_KERNEL_FILE_MISSING) printf "✗ カーネルファイルなし" ;;
+                MSG_KERNEL_VERSION_INFO) printf "バージョン: %s" "$@" ;;
+                MSG_KERNEL_DISPLAY_NAME) printf "表示名: %s" "$@" ;;
+                MSG_KERNEL_DISPLAY_NAME_PARSE_FAIL) printf "表示名: %s (解析失敗)" "$@" ;;
+                MSG_BACKUP_FOUND) printf "✓ バックアップあり" ;;
+                MSG_BACKUP_LATEST) printf "最新バックアップ: %s" "$@" ;;
+                MSG_BACKUP_VERSION) printf "バックアップ版: %s" "$@" ;;
+                MSG_BACKUP_VERSION_UNKNOWN) printf "バックアップ版: 不明" ;;
+                MSG_BACKUP_TIME) printf "バックアップ時間: %s" "$@" ;;
+                MSG_BACKUP_NONE) printf "⚠️  バックアップがありません" ;;
+
+                MSG_LIST_BACKUPS_TITLE) printf "すべてのバックアップカーネルを一覧" ;;
+                MSG_NO_BACKUPS) printf "バックアップファイルなし" ;;
+                MSG_BACKUP_LIST_TITLE) printf "[情報] 利用可能なバックアップ (新しい順):" ;;
+                MSG_BACKUP_LIST_COLUMNS) printf "番号 | バージョン | バックアップ時間" ;;
+                MSG_BACKUP_TOTAL) printf "バックアップ総数: %s" "$@" ;;
+
+                MSG_SWITCH_TITLE) printf "カーネル版の切替" ;;
+                MSG_SWITCH_PROMPT) printf "切り替えるバックアップ番号を入力 (Enterで戻る): " ;;
+                MSG_INVALID_NUMBER) printf "有効な数字を入力してください。" ;;
+                MSG_BACKUP_NO_MATCH) printf "一致するバックアップ番号がありません。" ;;
+                MSG_SWITCH_START) printf "[手順] カーネル切替を開始..." ;;
+                MSG_BACKUP_SELECTED) printf "[情報] 選択したバックアップ: %s" "$@" ;;
+                MSG_CURRENT_KERNEL_VERSION) printf "[情報] 現在のカーネル版: %s" "$@" ;;
+                MSG_CURRENT_KERNEL_MISSING) printf "[情報] 現在のカーネルがありません" ;;
+                MSG_SWITCH_CONFIRM) printf "この版に切り替えますか? (y/n): " ;;
+                MSG_OP_CANCELLED) printf "操作をキャンセルしました。" ;;
+                MSG_BACKUP_CURRENT_KERNEL) printf "[手順] 現在のカーネルをバックアップ -> %s" "$@" ;;
+                MSG_KERNEL_REPLACED) printf "[手順] カーネルを置換: %s" "$@" ;;
+                MSG_TEMP_BACKUP_REMOVED) printf "[手順] 一時バックアップを削除: %s" "$@" ;;
+                MSG_SWITCH_DONE) printf "[完了] カーネル切替完了" ;;
+
+                MSG_LIST_BACKUPS_SIMPLE_TITLE) printf "[情報] 利用可能なバックアップ:" ;;
+                MSG_INSTALL_TITLE) printf "Mihomo カーネルをインストール/更新" ;;
+                MSG_SELECT_GITHUB_USER) printf "ダウンロードする GitHub ユーザーを選択:" ;;
+                MSG_SELECT_USER_PROMPT) printf "ユーザーを選択 (デフォルト1): " ;;
+                MSG_SELECTED_GITHUB_USER) printf "[情報] 選択した GitHub ユーザー: %s" "$@" ;;
+                MSG_GET_VERSION_INFO) printf "[手順] 最新バージョン情報を取得中..." ;;
+                MSG_VERSION_INFO_FAIL) printf "バージョン情報を取得できないか、存在しません。" ;;
+                MSG_VERSION_INFO) printf "[情報] バージョン: %s" "$@" ;;
+                MSG_ARCH_UNSUPPORTED) printf "未対応アーキテクチャ: %s" "$@" ;;
+                MSG_ARCH_DETECTED) printf "[情報] アーキテクチャ: %s" "$@" ;;
+                MSG_DOWNLOAD_INFO) printf "[手順] ダウンロード情報:" ;;
+                MSG_DOWNLOAD_URL) printf "  ダウンロードURL: %s" "$@" ;;
+                MSG_VERSION_LABEL) printf "  バージョン: %s" "$@" ;;
+                MSG_DOWNLOAD_CONFIRM) printf "このバージョンをダウンロードしてインストールしますか? (y/n): " ;;
+                MSG_DOWNLOAD_START) printf "[手順] カーネルをダウンロード中 (数分かかる場合があります)..." ;;
+                MSG_DOWNLOAD_RETRY) printf "ダウンロード失敗。%s/%s で再試行中..." "$@" ;;
+                MSG_DOWNLOAD_OK) printf "ダウンロード完了" ;;
+                MSG_EXTRACT_START) printf "[手順] カーネルを解凍中..." ;;
+                MSG_BACKUP_NEW_KERNEL) printf "[手順] 新規カーネルをバックアップ -> %s" "$@" ;;
+                MSG_INSTALL_DONE) printf "[完了] カーネルのインストールが成功" ;;
+                MSG_EXTRACT_FAIL) printf "解凍に失敗しました。" ;;
+                MSG_DOWNLOAD_FAIL) printf "ダウンロードに失敗しました (%s 回試行)。" "$@" ;;
+
+                MSG_VERSION_PARSE_FAIL) printf "解析失敗" ;;
+                MSG_NOT_INSTALLED) printf "未インストール" ;;
+
+                MSG_START_TITLE) printf "Mihomo カーネルを起動" ;;
+                MSG_KERNEL_RUNNING) printf "Mihomo カーネルは既に起動しています" ;;
+                MSG_START_PRECHECK) printf "[手順] 起動前チェック..." ;;
+                MSG_KERNEL_NOT_FOUND) printf "Mihomo カーネルファイルが見つかりません" ;;
+                MSG_KERNEL_NOT_EXEC) printf "Mihomo カーネルファイルが実行不可" ;;
+                MSG_ADD_EXEC) printf "[手順] 実行権限を付与中..." ;;
+                MSG_ADD_EXEC_FAIL) printf "実行権限の付与に失敗" ;;
+                MSG_CONFIG_DEFAULT_MISSING) printf "デフォルト設定ファイルが見つかりません: %s" "$@" ;;
+                MSG_CONFIG_SCAN) printf "[手順] 他の設定ファイルを確認中..." ;;
+                MSG_CONFIG_NONE) printf "設定ディレクトリに設定ファイルがありません。" ;;
+                MSG_CONFIG_PUT_HINT) printf "%s に設定ファイルを配置してください" "$@" ;;
+                MSG_CONFIG_AVAILABLE) printf "[情報] 利用可能な設定ファイル:" ;;
+                MSG_CONFIG_LIST_COLUMNS) printf "番号 | 設定ファイルパス" ;;
+                MSG_CONFIG_SELECT_PROMPT) printf "使用する設定ファイル番号を選択 (0でキャンセル): " ;;
+                MSG_CONFIG_SELECTED) printf "選択した設定ファイル: %s" "$@" ;;
+                MSG_CONFIG_INVALID) printf "無効な選択です。" ;;
+                MSG_CONFIG_READ_FAIL) printf "設定ファイルを読めません: %s" "$@" ;;
+                MSG_CONFIG_PERM_HINT) printf "設定ファイルの権限を確認してください。" ;;
+                MSG_CONFIG_EMPTY) printf "設定ファイルが空です: %s" "$@" ;;
+                MSG_CONFIG_EMPTY_HINT) printf "設定ファイルに有効な内容があるか確認してください。" ;;
+                MSG_CONFIG_WILL_USE) printf "使用する設定ファイル: %s" "$@" ;;
+                MSG_START_PROCESS) printf "[手順] カーネルプロセスを起動中..." ;;
+                MSG_START_COMMAND) printf "起動コマンド: %s" "$@" ;;
+                MSG_PID_WRITTEN) printf "PIDを保存: %s" "$@" ;;
+                MSG_KERNEL_STARTED) printf "Mihomo カーネルを起動しました" ;;
+                MSG_PROCESS_ID) printf "プロセスID: %s" "$@" ;;
+                MSG_KERNEL_START_FAIL) printf "Mihomo カーネルの起動に失敗" ;;
+
+                MSG_STOP_TITLE) printf "Mihomo カーネルを停止" ;;
+                MSG_KERNEL_NOT_RUNNING) printf "Mihomo カーネルは停止中です" ;;
+                MSG_STOPPING_KERNEL) printf "[手順] Mihomo カーネルを停止中..." ;;
+                MSG_PIDS_FOUND) printf "プロセスIDを検出: %s" "$@" ;;
+                MSG_STOPPING_PROCESS) printf "[手順] プロセス %s を停止中..." "$@" ;;
+                MSG_FORCE_STOPPING) printf "残りのプロセスを強制停止中..." ;;
+                MSG_KERNEL_STOP_FAIL) printf "Mihomo カーネルの停止に失敗" ;;
+                MSG_KERNEL_STOP_HINT) printf "Activity Monitor で手動停止を試してください。" ;;
+                MSG_KERNEL_STOPPED) printf "Mihomo カーネルを停止しました" ;;
+                MSG_PROCESS_NOT_RUNNING) printf "Mihomo カーネルプロセスは動作していません" ;;
+                MSG_PID_CLEANED) printf "PIDファイルを削除: %s" "$@" ;;
+
+                MSG_RESTART_TITLE) printf "Mihomo カーネルを再起動" ;;
+                MSG_KERNEL_MENU_TITLE) printf "カーネル制御" ;;
+                MSG_KERNEL_MENU_PROMPT) printf "カーネル操作を選択:" ;;
+                MSG_MENU_START) printf "1) カーネルを起動" ;;
+                MSG_MENU_STOP) printf "2) カーネルを停止" ;;
+                MSG_MENU_RESTART) printf "3) カーネルを再起動" ;;
+                MSG_MENU_BACK) printf "0) メインメニューへ戻る" ;;
+                MSG_MENU_CHOICE_0_3) printf "選択 (0-3): " ;;
+                MSG_MENU_INVALID) printf "無効な選択です。再入力してください。" ;;
+
+                MSG_LOGS_TITLE) printf "Mihomo カーネルログを表示" ;;
+                MSG_LOG_FILE_MISSING) printf "ログファイルが見つかりません: %s" "$@" ;;
+                MSG_LOG_FILE_HINT) printf "ログ生成のためにカーネルを先に起動してください。" ;;
+                MSG_LOG_FILE_PATH) printf "[情報] ログファイルパス: %s" "$@" ;;
+                MSG_LOG_FILE_SIZE) printf "[情報] ログサイズ: %s" "$@" ;;
+                MSG_LOG_FILE_LINES) printf "[情報] ログ行数: %s" "$@" ;;
+                MSG_LOG_VIEW_OPTIONS) printf "[オプション] ログ表示方法:" ;;
+                MSG_LOG_OPTION_TAIL) printf "1) 最後の50行を表示" ;;
+                MSG_LOG_OPTION_FOLLOW) printf "2) リアルタイム表示 (Ctrl+Cで終了)" ;;
+                MSG_LOG_OPTION_LESS) printf "3) lessで全文表示 (qで終了)" ;;
+                MSG_LOG_OPTION_BACK) printf "0) メインメニューへ戻る" ;;
+                MSG_LOG_TAIL_HEADER) printf "[情報] ログの最後50行:" ;;
+                MSG_LOG_FOLLOW_HEADER) printf "[情報] リアルタイム表示 (Ctrl+Cで終了):" ;;
+                MSG_LOG_LESS_HEADER) printf "[情報] lessで全文表示 (qで終了):" ;;
+
+                MSG_HELP_TITLE) printf "ヘルプ" ;;
+                MSG_HELP_ARGS) printf "コマンドライン引数:" ;;
+                MSG_HELP_DIR_ARG) printf "  -d|--directory <path>  ClashFox インストール先を指定" ;;
+                MSG_HELP_LANG_ARG) printf "  -l|--lang <zh|en|ja|ko|fr|de|ru|auto>  表示言語を指定" ;;
+                MSG_HELP_STATUS) printf "  status                 現在のカーネル状態を表示" ;;
+                MSG_HELP_LIST) printf "  list                   すべてのバックアップを一覧" ;;
+                MSG_HELP_SWITCH) printf "  switch                 カーネル版を切替" ;;
+                MSG_HELP_LOGS) printf "  logs|log               カーネルログを表示" ;;
+                MSG_HELP_CLEAN) printf "  clean|clear            ログを削除" ;;
+                MSG_HELP_HELP) printf "  help|-h                ヘルプを表示" ;;
+                MSG_HELP_VERSION) printf "  version|-v             バージョンを表示" ;;
+                MSG_HELP_MENU) printf "対話メニュー:" ;;
+                MSG_MENU_INSTALL) printf "1) Mihomo カーネルをインストール/更新" ;;
+                MSG_MENU_CONTROL) printf "2) カーネル制御(起動/停止/再起動)" ;;
+                MSG_MENU_STATUS) printf "3) 現在の状態を表示" ;;
+                MSG_MENU_SWITCH) printf "4) カーネル版を切替" ;;
+                MSG_MENU_LIST) printf "5) すべてのバックアップを一覧" ;;
+                MSG_MENU_LOGS) printf "6) カーネルログを表示" ;;
+                MSG_MENU_CLEAN) printf "7) ログを削除" ;;
+                MSG_MENU_HELP) printf "8) ヘルプを表示" ;;
+                MSG_MENU_EXIT) printf "0) 終了" ;;
+                MSG_HELP_NOTE) printf "このツールはカーネル版管理と、カーネル状態(起動/停止/再起動)の制御ができます。" ;;
+
+                MSG_CLEAN_TITLE) printf "古いログを削除" ;;
+                MSG_CLEAN_CURRENT_LOG) printf "[情報] 現在のログ: %s" "$@" ;;
+                MSG_CLEAN_LOG_SIZE) printf "[情報] ログサイズ: %s" "$@" ;;
+                MSG_CLEAN_OLD_COUNT) printf "[情報] 旧ログ数: %s" "$@" ;;
+                MSG_CLEAN_OLD_SIZE) printf "[情報] 旧ログ合計サイズ: %s" "$@" ;;
+                MSG_CLEAN_OPTIONS) printf "[クリーンアップオプション]" ;;
+                MSG_CLEAN_ALL) printf "1) すべての旧ログを削除" ;;
+                MSG_CLEAN_7D) printf "2) 直近7日を保持し古いログを削除" ;;
+                MSG_CLEAN_30D) printf "3) 直近30日を保持し古いログを削除" ;;
+                MSG_CLEAN_CANCEL) printf "0) キャンセル" ;;
+                MSG_CLEAN_PROMPT) printf "削除方法を選択 (0-3): " ;;
+                MSG_CLEAN_DONE_ALL) printf "すべての旧ログを削除しました" ;;
+                MSG_CLEAN_DONE_7D) printf "7日より古いログを削除しました" ;;
+                MSG_CLEAN_DONE_30D) printf "30日より古いログを削除しました" ;;
+                MSG_CLEAN_CANCELLED) printf "削除をキャンセルしました" ;;
+                MSG_CLEAN_INVALID) printf "無効な選択です" ;;
+
+                MSG_LOG_ROTATE_DATE) printf "日付でログをローテーション: %s" "$@" ;;
+                MSG_LOG_ROTATE_SIZE) printf "サイズでログをローテーション: %s" "$@" ;;
+
+                MSG_MAIN_STATUS_TITLE) printf "現在のカーネル情報" ;;
+                MSG_MAIN_MENU_TITLE) printf "メインメニュー" ;;
+                MSG_KERNEL_STATUS_CHECK) printf "カーネル状態チェック" ;;
+                MSG_MAIN_PROMPT) printf "操作を選択してください:" ;;
+                MSG_MAIN_LINE_1) printf "  1) Mihomo カーネルをインストール/更新       2) カーネル制御(起動/停止/再起動)" ;;
+                MSG_MAIN_LINE_2) printf "  3) 現在の状態を表示                         4) カーネル版を切替" ;;
+                MSG_MAIN_LINE_3) printf "  5) すべてのバックアップを一覧               6) カーネルログを表示" ;;
+                MSG_MAIN_LINE_4) printf "  7) ログを削除                               8) ヘルプを表示" ;;
+                MSG_MAIN_LINE_5) printf "  0) 終了" ;;
+
+                MSG_CLEANUP_STOPPING) printf "[クリーンアップ] ログチェッカーを停止中 (PID: %s)..." "$@" ;;
+                MSG_CLEANUP_FORCE) printf "[クリーンアップ] ログチェッカーを強制停止中..." ;;
+                MSG_CLEANUP_FAIL) printf "[クリーンアップ] ログチェッカー停止に失敗 (PID: %s)" "$@" ;;
+                MSG_CLEANUP_OK) printf "ログチェッカーを停止しました" ;;
+                MSG_EXIT_ABNORMAL) printf "[終了] プログラムが異常終了しました" ;;
+
+                MSG_ARG_DIR_REQUIRED) printf "-d/--directory にはディレクトリパスが必要です。" ;;
+                MSG_ARG_LANG_REQUIRED) printf "-l/--lang には言語(zh|en|ja|ko|fr|de|ru|auto)が必要です。" ;;
+                MSG_ARG_LANG_INVALID) printf "無効な言語: %s (対応: zh|en|ja|ko|fr|de|ru|auto)" "$@" ;;
+                MSG_UNKNOWN_COMMAND) printf "不明なコマンド: %s" "$@" ;;
+                MSG_AVAILABLE_COMMANDS) printf "利用可能コマンド: status, list, switch, logs, clean, help, version" ;;
+                MSG_AVAILABLE_ARGS) printf "利用可能引数: -d/--directory <path> - ClashFoxのインストール先; -l/--lang <zh|en|ja|ko|fr|de|ru|auto> - 表示言語" ;;
+
+                MSG_SAVED_DIR_LOADED) printf "保存済みディレクトリを読み込みました: %s" "$@" ;;
+                MSG_SAVED_DIR_NOT_FOUND) printf "保存済みディレクトリがありません。デフォルトを使用: %s" "$@" ;;
+                MSG_DIR_SAVED) printf "設定ファイルに保存しました: %s" "$@" ;;
+
+                MSG_DIR_SELECT_TITLE) printf "ClashFox のインストール先を選択" ;;
+                MSG_DEFAULT_DIR_CURRENT) printf "現在のデフォルトディレクトリ: %s" "$@" ;;
+                MSG_USE_DEFAULT_DIR) printf "デフォルトディレクトリを使用しますか? (y/n): " ;;
+                MSG_CUSTOM_DIR_PROMPT) printf "カスタムインストール先を入力: " ;;
+                MSG_DIR_SET) printf "ClashFox のインストール先を設定: %s" "$@" ;;
+                MSG_DIR_USE_DEFAULT) printf "デフォルトのインストール先を使用: %s" "$@" ;;
+                MSG_DIR_INVALID_FALLBACK) printf "無効な入力。デフォルトを使用: %s" "$@" ;;
+                MSG_DIR_EXISTING) printf "既存のインストール先を使用: %s" "$@" ;;
+
+                MSG_LOG_CHECKER_START) printf "[初期化] ログチェッカーを起動中..." ;;
+                MSG_LOG_CHECKER_OK) printf "ログチェッカーを起動しました。PID: %s" "$@" ;;
+                MSG_APP_CHECK) printf "[初期化] ClashFox アプリのインストール確認..." ;;
+                MSG_APP_DIR_MISSING) printf "ClashFox アプリディレクトリがありません。作成中..." ;;
+                MSG_APP_DIR_TARGET) printf "  対象ディレクトリ: %s" "$@" ;;
+                MSG_APP_DIR_CREATED) printf "ClashFox アプリディレクトリを作成しました: %s" "$@" ;;
+                MSG_APP_DIR_EXISTS) printf "ClashFox アプリがインストール済み: %s" "$@" ;;
+
+                MSG_MAIN_CHOICE) printf "選択 (0-8): " ;;
+                MSG_EXIT_THANKS) printf "[終了] ClashFox Mihomo Kernel Manager をご利用いただきありがとうございます" ;;
+
+                MSG_MIHOMO_CONFIG_NOT_FOUND) printf "Mihomo 設定: [未検出 %s]" "$@" ;;
+                MSG_MIHOMO_CONFIG_FOUND) printf "Mihomo 設定: [%s]" "$@" ;;
+                MSG_MIHOMO_STATUS_RUNNING) printf "%s: [%s]" "$@" ;;
+                MSG_MIHOMO_STATUS_STOPPED) printf "%s: [%s]" "$@" ;;
+                MSG_MIHOMO_KERNEL_LINE) printf "%s: [%s]" "$@" ;;
+
+                *) printf "%s" "$key" ;;
+            esac
+            ;;
+        ko)
+            case "$key" in
+                TAG_SUCCESS) printf "성공" ;;
+                TAG_ERROR) printf "오류" ;;
+                TAG_WARNING) printf "안내" ;;
+                TAG_VERSION) printf "버전" ;;
+                LABEL_FUNCTION) printf "기능" ;;
+                LABEL_STATUS) printf "상태" ;;
+                LABEL_HELP) printf "도움말" ;;
+                LABEL_INIT) printf "초기화" ;;
+                LABEL_STEP) printf "단계" ;;
+                LABEL_INFO) printf "정보" ;;
+                LABEL_CLEANUP) printf "정리" ;;
+                LABEL_OPTIONS) printf "옵션" ;;
+                LABEL_MENU) printf "메인 메뉴" ;;
+
+                MSG_MACOS_ONLY) printf "이 스크립트는 macOS만 지원합니다." ;;
+                MSG_WELCOME) printf "%s님, %s에 오신 것을 환영합니다" "$@" ;;
+                MSG_PRESS_ENTER) printf "Enter 키를 눌러 계속..." ;;
+                MSG_REQUIRE_SUDO_TITLE) printf "커널 관리를 위해 시스템 권한이 필요합니다." ;;
+                MSG_REQUIRE_SUDO_DESC) printf "참고: 시작/중지/재시작/상태 작업에는 sudo 권한이 필요합니다." ;;
+                MSG_REQUIRE_SUDO_PROMPT) printf "인증: 계속하려면 macOS 비밀번호를 입력하세요." ;;
+                MSG_SUDO_OK) printf "권한 확인 완료." ;;
+                MSG_SUDO_FAIL) printf "비밀번호 확인 실패. 다시 시도하세요." ;;
+
+                MSG_INIT_CHECK_DIRS) printf "[초기화] 디렉터리 구조 확인 중..." ;;
+                MSG_INIT_SET_PERMS) printf "[초기화] 디렉터리 권한 설정 중..." ;;
+                MSG_NEED_ADMIN) printf "디렉터리 생성을 위해 관리자 권한이 필요합니다." ;;
+                MSG_NO_PERMISSION) printf "권한이 부족하여 디렉터리를 만들 수 없습니다." ;;
+                MSG_CORE_DIR_CREATE) printf "코어 디렉터리 생성: %s" "$@" ;;
+                MSG_CORE_DIR_EXISTS) printf "코어 디렉터리가 존재합니다: %s" "$@" ;;
+                MSG_CONFIG_DIR_CREATE) printf "설정 디렉터리 생성: %s" "$@" ;;
+                MSG_CONFIG_DIR_EXISTS) printf "설정 디렉터리가 존재합니다: %s" "$@" ;;
+                MSG_DATA_DIR_CREATE) printf "데이터 디렉터리 생성: %s" "$@" ;;
+                MSG_DATA_DIR_EXISTS) printf "데이터 디렉터리가 존재합니다: %s" "$@" ;;
+                MSG_LOG_DIR_CREATE) printf "로그 디렉터리 생성: %s" "$@" ;;
+                MSG_LOG_DIR_EXISTS) printf "로그 디렉터리가 존재합니다: %s" "$@" ;;
+                MSG_RUNTIME_DIR_CREATE) printf "런타임 디렉터리 생성: %s" "$@" ;;
+                MSG_RUNTIME_DIR_EXISTS) printf "런타임 디렉터리가 존재합니다: %s" "$@" ;;
+                MSG_DIRS_PERMS_OK) printf "디렉터리 권한을 설정했습니다." ;;
+
+                MSG_CORE_DIR_MISSING_CREATE) printf "코어 디렉터리가 없습니다. 구조를 생성 중..." ;;
+                MSG_DIR_CREATE_FAIL) printf "디렉터리 구조 생성에 실패했습니다." ;;
+                MSG_CORE_DIR_ENTER_FAIL) printf "코어 디렉터리에 들어갈 수 없습니다." ;;
+
+                MSG_STATUS_STOPPED) printf "중지됨" ;;
+                MSG_STATUS_RUNNING) printf "실행 중" ;;
+                MSG_STATUS_LABEL) printf "Mihomo 상태" ;;
+                MSG_KERNEL_LABEL) printf "Mihomo 커널" ;;
+                MSG_CONFIG_LABEL) printf "Mihomo 설정" ;;
+                MSG_CONFIG_NOT_FOUND) printf "찾을 수 없음: %s" "$@" ;;
+                MSG_STATUS_SECTION) printf "• 상태:" ;;
+                MSG_KERNEL_FILES_SECTION) printf "• 커널 파일 정보:" ;;
+                MSG_BACKUP_SECTION) printf "• 백업 정보:" ;;
+                MSG_KERNEL_FILE_OK) printf "✓ 커널 파일 존재" ;;
+                MSG_KERNEL_FILE_NOEXEC) printf "✗ 커널 파일이 실행 불가" ;;
+                MSG_KERNEL_FILE_MISSING) printf "✗ 커널 파일 없음" ;;
+                MSG_KERNEL_VERSION_INFO) printf "버전: %s" "$@" ;;
+                MSG_KERNEL_DISPLAY_NAME) printf "표시 이름: %s" "$@" ;;
+                MSG_KERNEL_DISPLAY_NAME_PARSE_FAIL) printf "표시 이름: %s (파싱 실패)" "$@" ;;
+                MSG_BACKUP_FOUND) printf "✓ 백업 발견" ;;
+                MSG_BACKUP_LATEST) printf "최신 백업: %s" "$@" ;;
+                MSG_BACKUP_VERSION) printf "백업 버전: %s" "$@" ;;
+                MSG_BACKUP_VERSION_UNKNOWN) printf "백업 버전: 알 수 없음" ;;
+                MSG_BACKUP_TIME) printf "백업 시간: %s" "$@" ;;
+                MSG_BACKUP_NONE) printf "⚠️  백업이 없습니다" ;;
+
+                MSG_LIST_BACKUPS_TITLE) printf "모든 백업 커널 목록" ;;
+                MSG_NO_BACKUPS) printf "백업 파일 없음" ;;
+                MSG_BACKUP_LIST_TITLE) printf "[정보] 사용 가능한 백업(최신순):" ;;
+                MSG_BACKUP_LIST_COLUMNS) printf "번호 | 버전 | 백업 시간" ;;
+                MSG_BACKUP_TOTAL) printf "백업 총수: %s" "$@" ;;
+
+                MSG_SWITCH_TITLE) printf "커널 버전 전환" ;;
+                MSG_SWITCH_PROMPT) printf "전환할 백업 번호 입력 (Enter로 돌아가기): " ;;
+                MSG_INVALID_NUMBER) printf "유효한 숫자를 입력하세요." ;;
+                MSG_BACKUP_NO_MATCH) printf "일치하는 백업 번호가 없습니다." ;;
+                MSG_SWITCH_START) printf "[단계] 커널 전환 시작..." ;;
+                MSG_BACKUP_SELECTED) printf "[정보] 선택된 백업: %s" "$@" ;;
+                MSG_CURRENT_KERNEL_VERSION) printf "[정보] 현재 커널 버전: %s" "$@" ;;
+                MSG_CURRENT_KERNEL_MISSING) printf "[정보] 현재 커널이 없습니다" ;;
+                MSG_SWITCH_CONFIRM) printf "이 버전으로 전환할까요? (y/n): " ;;
+                MSG_OP_CANCELLED) printf "작업이 취소되었습니다." ;;
+                MSG_BACKUP_CURRENT_KERNEL) printf "[단계] 현재 커널 백업 -> %s" "$@" ;;
+                MSG_KERNEL_REPLACED) printf "[단계] 커널 교체: %s" "$@" ;;
+                MSG_TEMP_BACKUP_REMOVED) printf "[단계] 임시 백업 삭제: %s" "$@" ;;
+                MSG_SWITCH_DONE) printf "[완료] 커널 전환 완료" ;;
+
+                MSG_LIST_BACKUPS_SIMPLE_TITLE) printf "[정보] 사용 가능한 백업:" ;;
+                MSG_INSTALL_TITLE) printf "Mihomo 커널 설치/업데이트" ;;
+                MSG_SELECT_GITHUB_USER) printf "다운로드할 GitHub 사용자 선택:" ;;
+                MSG_SELECT_USER_PROMPT) printf "사용자 선택(기본 1): " ;;
+                MSG_SELECTED_GITHUB_USER) printf "[정보] 선택된 GitHub 사용자: %s" "$@" ;;
+                MSG_GET_VERSION_INFO) printf "[단계] 최신 버전 정보 가져오는 중..." ;;
+                MSG_VERSION_INFO_FAIL) printf "버전 정보를 가져올 수 없거나 버전이 없습니다." ;;
+                MSG_VERSION_INFO) printf "[정보] 버전: %s" "$@" ;;
+                MSG_ARCH_UNSUPPORTED) printf "지원하지 않는 아키텍처: %s" "$@" ;;
+                MSG_ARCH_DETECTED) printf "[정보] 아키텍처: %s" "$@" ;;
+                MSG_DOWNLOAD_INFO) printf "[단계] 다운로드 정보:" ;;
+                MSG_DOWNLOAD_URL) printf "  다운로드 URL: %s" "$@" ;;
+                MSG_VERSION_LABEL) printf "  버전: %s" "$@" ;;
+                MSG_DOWNLOAD_CONFIRM) printf "이 버전을 다운로드 및 설치할까요? (y/n): " ;;
+                MSG_DOWNLOAD_START) printf "[단계] 커널 다운로드 중(몇 분 걸릴 수 있음)..." ;;
+                MSG_DOWNLOAD_RETRY) printf "다운로드 실패. %s/%s 재시도 중..." "$@" ;;
+                MSG_DOWNLOAD_OK) printf "다운로드 완료" ;;
+                MSG_EXTRACT_START) printf "[단계] 커널 압축 해제 중..." ;;
+                MSG_BACKUP_NEW_KERNEL) printf "[단계] 새 커널 백업 -> %s" "$@" ;;
+                MSG_INSTALL_DONE) printf "[완료] 커널 설치 성공" ;;
+                MSG_EXTRACT_FAIL) printf "압축 해제 실패." ;;
+                MSG_DOWNLOAD_FAIL) printf "다운로드 실패(%s회 시도)." "$@" ;;
+
+                MSG_VERSION_PARSE_FAIL) printf "파싱 실패" ;;
+                MSG_NOT_INSTALLED) printf "미설치" ;;
+
+                MSG_START_TITLE) printf "Mihomo 커널 시작" ;;
+                MSG_KERNEL_RUNNING) printf "Mihomo 커널이 이미 실행 중입니다" ;;
+                MSG_START_PRECHECK) printf "[단계] 시작 전 점검..." ;;
+                MSG_KERNEL_NOT_FOUND) printf "Mihomo 커널 파일을 찾을 수 없습니다" ;;
+                MSG_KERNEL_NOT_EXEC) printf "Mihomo 커널 파일이 실행 불가" ;;
+                MSG_ADD_EXEC) printf "[단계] 실행 권한 추가 중..." ;;
+                MSG_ADD_EXEC_FAIL) printf "실행 권한 추가 실패" ;;
+                MSG_CONFIG_DEFAULT_MISSING) printf "기본 설정 파일을 찾을 수 없습니다: %s" "$@" ;;
+                MSG_CONFIG_SCAN) printf "[단계] 다른 설정 파일 확인 중..." ;;
+                MSG_CONFIG_NONE) printf "설정 디렉터리에 설정 파일이 없습니다." ;;
+                MSG_CONFIG_PUT_HINT) printf "%s 에 설정 파일을 넣어주세요" "$@" ;;
+                MSG_CONFIG_AVAILABLE) printf "[정보] 사용 가능한 설정 파일:" ;;
+                MSG_CONFIG_LIST_COLUMNS) printf "번호 | 설정 파일 경로" ;;
+                MSG_CONFIG_SELECT_PROMPT) printf "사용할 설정 파일 번호 선택(0 취소): " ;;
+                MSG_CONFIG_SELECTED) printf "선택된 설정 파일: %s" "$@" ;;
+                MSG_CONFIG_INVALID) printf "잘못된 선택입니다." ;;
+                MSG_CONFIG_READ_FAIL) printf "설정 파일을 읽을 수 없음: %s" "$@" ;;
+                MSG_CONFIG_PERM_HINT) printf "설정 파일 권한을 확인하세요." ;;
+                MSG_CONFIG_EMPTY) printf "설정 파일이 비어 있습니다: %s" "$@" ;;
+                MSG_CONFIG_EMPTY_HINT) printf "설정 파일에 유효한 내용이 있는지 확인하세요." ;;
+                MSG_CONFIG_WILL_USE) printf "사용할 설정 파일: %s" "$@" ;;
+                MSG_START_PROCESS) printf "[단계] 커널 프로세스 시작 중..." ;;
+                MSG_START_COMMAND) printf "시작 명령: %s" "$@" ;;
+                MSG_PID_WRITTEN) printf "PID 기록: %s" "$@" ;;
+                MSG_KERNEL_STARTED) printf "Mihomo 커널이 시작되었습니다" ;;
+                MSG_PROCESS_ID) printf "프로세스 ID: %s" "$@" ;;
+                MSG_KERNEL_START_FAIL) printf "Mihomo 커널 시작 실패" ;;
+
+                MSG_STOP_TITLE) printf "Mihomo 커널 중지" ;;
+                MSG_KERNEL_NOT_RUNNING) printf "Mihomo 커널이 실행 중이 아닙니다" ;;
+                MSG_STOPPING_KERNEL) printf "[단계] Mihomo 커널 중지 중..." ;;
+                MSG_PIDS_FOUND) printf "프로세스 ID 발견: %s" "$@" ;;
+                MSG_STOPPING_PROCESS) printf "[단계] 프로세스 %s 중지 중..." ;;
+                MSG_FORCE_STOPPING) printf "남은 프로세스를 강제 종료 중..." ;;
+                MSG_KERNEL_STOP_FAIL) printf "Mihomo 커널 중지 실패" ;;
+                MSG_KERNEL_STOP_HINT) printf "Activity Monitor에서 수동으로 중지해 보세요." ;;
+                MSG_KERNEL_STOPPED) printf "Mihomo 커널이 중지되었습니다" ;;
+                MSG_PROCESS_NOT_RUNNING) printf "Mihomo 커널 프로세스가 실행 중이 아닙니다" ;;
+                MSG_PID_CLEANED) printf "PID 파일 삭제: %s" "$@" ;;
+
+                MSG_RESTART_TITLE) printf "Mihomo 커널 재시작" ;;
+                MSG_KERNEL_MENU_TITLE) printf "커널 제어" ;;
+                MSG_KERNEL_MENU_PROMPT) printf "커널 작업을 선택하세요:" ;;
+                MSG_MENU_START) printf "1) 커널 시작" ;;
+                MSG_MENU_STOP) printf "2) 커널 중지" ;;
+                MSG_MENU_RESTART) printf "3) 커널 재시작" ;;
+                MSG_MENU_BACK) printf "0) 메인 메뉴로 돌아가기" ;;
+                MSG_MENU_CHOICE_0_3) printf "선택 (0-3): " ;;
+                MSG_MENU_INVALID) printf "잘못된 선택입니다. 다시 입력하세요." ;;
+
+                MSG_LOGS_TITLE) printf "Mihomo 커널 로그 보기" ;;
+                MSG_LOG_FILE_MISSING) printf "로그 파일을 찾을 수 없음: %s" "$@" ;;
+                MSG_LOG_FILE_HINT) printf "먼저 커널을 시작하여 로그를 생성하세요." ;;
+                MSG_LOG_FILE_PATH) printf "[정보] 로그 파일 경로: %s" "$@" ;;
+                MSG_LOG_FILE_SIZE) printf "[정보] 로그 크기: %s" "$@" ;;
+                MSG_LOG_FILE_LINES) printf "[정보] 로그 줄 수: %s" "$@" ;;
+                MSG_LOG_VIEW_OPTIONS) printf "[옵션] 로그 보기 방법:" ;;
+                MSG_LOG_OPTION_TAIL) printf "1) 마지막 50줄 보기" ;;
+                MSG_LOG_OPTION_FOLLOW) printf "2) 실시간 로그 보기 (Ctrl+C 종료)" ;;
+                MSG_LOG_OPTION_LESS) printf "3) less로 전체 보기 (q 종료)" ;;
+                MSG_LOG_OPTION_BACK) printf "0) 메인 메뉴로 돌아가기" ;;
+                MSG_LOG_TAIL_HEADER) printf "[정보] 마지막 50줄:" ;;
+                MSG_LOG_FOLLOW_HEADER) printf "[정보] 실시간 로그 보기 (Ctrl+C 종료):" ;;
+                MSG_LOG_LESS_HEADER) printf "[정보] less로 전체 보기 (q 종료):" ;;
+
+                MSG_HELP_TITLE) printf "도움말" ;;
+                MSG_HELP_ARGS) printf "명령줄 인자:" ;;
+                MSG_HELP_DIR_ARG) printf "  -d|--directory <path>  ClashFox 설치 경로 지정" ;;
+                MSG_HELP_LANG_ARG) printf "  -l|--lang <zh|en|ja|ko|fr|de|ru|auto>  UI 언어 지정" ;;
+                MSG_HELP_STATUS) printf "  status                 현재 커널 상태 보기" ;;
+                MSG_HELP_LIST) printf "  list                   모든 백업 목록" ;;
+                MSG_HELP_SWITCH) printf "  switch                 커널 버전 전환" ;;
+                MSG_HELP_LOGS) printf "  logs|log               커널 로그 보기" ;;
+                MSG_HELP_CLEAN) printf "  clean|clear            로그 정리" ;;
+                MSG_HELP_HELP) printf "  help|-h                도움말 표시" ;;
+                MSG_HELP_VERSION) printf "  version|-v             버전 표시" ;;
+                MSG_HELP_MENU) printf "대화형 메뉴:" ;;
+                MSG_MENU_INSTALL) printf "1) Mihomo 커널 설치/업데이트" ;;
+                MSG_MENU_CONTROL) printf "2) 커널 제어(시작/중지/재시작)" ;;
+                MSG_MENU_STATUS) printf "3) 현재 상태 보기" ;;
+                MSG_MENU_SWITCH) printf "4) 커널 버전 전환" ;;
+                MSG_MENU_LIST) printf "5) 모든 백업 목록" ;;
+                MSG_MENU_LOGS) printf "6) 커널 로그 보기" ;;
+                MSG_MENU_CLEAN) printf "7) 로그 정리" ;;
+                MSG_MENU_HELP) printf "8) 도움말 표시" ;;
+                MSG_MENU_EXIT) printf "0) 종료" ;;
+                MSG_HELP_NOTE) printf "이 도구는 커널 버전 관리 및 상태 제어(시작/중지/재시작)를 제공합니다." ;;
+
+                MSG_CLEAN_TITLE) printf "오래된 로그 정리" ;;
+                MSG_CLEAN_CURRENT_LOG) printf "[정보] 현재 로그: %s" "$@" ;;
+                MSG_CLEAN_LOG_SIZE) printf "[정보] 로그 크기: %s" "$@" ;;
+                MSG_CLEAN_OLD_COUNT) printf "[정보] 오래된 로그 개수: %s" "$@" ;;
+                MSG_CLEAN_OLD_SIZE) printf "[정보] 오래된 로그 총 크기: %s" "$@" ;;
+                MSG_CLEAN_OPTIONS) printf "[정리 옵션]" ;;
+                MSG_CLEAN_ALL) printf "1) 모든 오래된 로그 삭제" ;;
+                MSG_CLEAN_7D) printf "2) 최근 7일 유지, 이전 로그 삭제" ;;
+                MSG_CLEAN_30D) printf "3) 최근 30일 유지, 이전 로그 삭제" ;;
+                MSG_CLEAN_CANCEL) printf "0) 취소" ;;
+                MSG_CLEAN_PROMPT) printf "정리 방법 선택 (0-3): " ;;
+                MSG_CLEAN_DONE_ALL) printf "모든 오래된 로그를 삭제했습니다" ;;
+                MSG_CLEAN_DONE_7D) printf "7일 이전 로그를 삭제했습니다" ;;
+                MSG_CLEAN_DONE_30D) printf "30일 이전 로그를 삭제했습니다" ;;
+                MSG_CLEAN_CANCELLED) printf "정리가 취소되었습니다" ;;
+                MSG_CLEAN_INVALID) printf "잘못된 선택입니다" ;;
+
+                MSG_LOG_ROTATE_DATE) printf "날짜 기준 로그 회전: %s" "$@" ;;
+                MSG_LOG_ROTATE_SIZE) printf "크기 기준 로그 회전: %s" "$@" ;;
+
+                MSG_MAIN_STATUS_TITLE) printf "현재 커널 정보" ;;
+                MSG_MAIN_MENU_TITLE) printf "메인 메뉴" ;;
+                MSG_KERNEL_STATUS_CHECK) printf "커널 상태 확인" ;;
+                MSG_MAIN_PROMPT) printf "원하는 기능을 선택하세요:" ;;
+                MSG_MAIN_LINE_1) printf "  1) Mihomo 커널 설치/업데이트           2) 커널 제어(시작/중지/재시작)" ;;
+                MSG_MAIN_LINE_2) printf "  3) 현재 상태 보기                       4) 커널 버전 전환" ;;
+                MSG_MAIN_LINE_3) printf "  5) 모든 백업 목록                       6) 커널 로그 보기" ;;
+                MSG_MAIN_LINE_4) printf "  7) 로그 정리                            8) 도움말 표시" ;;
+                MSG_MAIN_LINE_5) printf "  0) 종료" ;;
+
+                MSG_CLEANUP_STOPPING) printf "[정리] 로그 검사 프로세스 종료 중 (PID: %s)..." "$@" ;;
+                MSG_CLEANUP_FORCE) printf "[정리] 로그 검사 프로세스 강제 종료 중..." ;;
+                MSG_CLEANUP_FAIL) printf "[정리] 로그 검사 프로세스 종료 실패 (PID: %s)" "$@" ;;
+                MSG_CLEANUP_OK) printf "로그 검사 프로세스를 종료했습니다" ;;
+                MSG_EXIT_ABNORMAL) printf "[종료] 프로그램이 비정상 종료되었습니다" ;;
+
+                MSG_ARG_DIR_REQUIRED) printf "-d/--directory 에는 디렉터리 경로가 필요합니다." ;;
+                MSG_ARG_LANG_REQUIRED) printf "-l/--lang 에는 언어(zh|en|ja|ko|fr|de|ru|auto)가 필요합니다." ;;
+                MSG_ARG_LANG_INVALID) printf "잘못된 언어: %s (지원: zh|en|ja|ko|fr|de|ru|auto)" "$@" ;;
+                MSG_UNKNOWN_COMMAND) printf "알 수 없는 명령: %s" "$@" ;;
+                MSG_AVAILABLE_COMMANDS) printf "사용 가능한 명령: status, list, switch, logs, clean, help, version" ;;
+                MSG_AVAILABLE_ARGS) printf "사용 가능한 인자: -d/--directory <path> - ClashFox 설치 경로; -l/--lang <zh|en|ja|ko|fr|de|ru|auto> - UI 언어" ;;
+
+                MSG_SAVED_DIR_LOADED) printf "저장된 디렉터리 불러옴: %s" "$@" ;;
+                MSG_SAVED_DIR_NOT_FOUND) printf "저장된 디렉터리가 없습니다. 기본값 사용: %s" "$@" ;;
+                MSG_DIR_SAVED) printf "디렉터리를 설정 파일에 저장: %s" "$@" ;;
+
+                MSG_DIR_SELECT_TITLE) printf "ClashFox 설치 경로 선택" ;;
+                MSG_DEFAULT_DIR_CURRENT) printf "현재 기본 디렉터리: %s" "$@" ;;
+                MSG_USE_DEFAULT_DIR) printf "기본 디렉터리를 사용하시겠습니까? (y/n): " ;;
+                MSG_CUSTOM_DIR_PROMPT) printf "사용자 지정 설치 경로 입력: " ;;
+                MSG_DIR_SET) printf "ClashFox 설치 경로 설정: %s" "$@" ;;
+                MSG_DIR_USE_DEFAULT) printf "기본 설치 경로 사용: %s" "$@" ;;
+                MSG_DIR_INVALID_FALLBACK) printf "잘못된 입력. 기본 경로 사용: %s" "$@" ;;
+                MSG_DIR_EXISTING) printf "기존 설치 경로 사용: %s" "$@" ;;
+
+                MSG_LOG_CHECKER_START) printf "[초기화] 로그 검사 프로세스 시작..." ;;
+                MSG_LOG_CHECKER_OK) printf "로그 검사 프로세스 시작됨. PID: %s" "$@" ;;
+                MSG_APP_CHECK) printf "[초기화] ClashFox 앱 설치 확인..." ;;
+                MSG_APP_DIR_MISSING) printf "ClashFox 앱 디렉터리가 없습니다. 생성 중..." ;;
+                MSG_APP_DIR_TARGET) printf "  대상 디렉터리: %s" "$@" ;;
+                MSG_APP_DIR_CREATED) printf "ClashFox 앱 디렉터리 생성됨: %s" "$@" ;;
+                MSG_APP_DIR_EXISTS) printf "ClashFox 앱이 설치되어 있습니다: %s" "$@" ;;
+
+                MSG_MAIN_CHOICE) printf "선택 (0-8): " ;;
+                MSG_EXIT_THANKS) printf "[종료] ClashFox Mihomo Kernel Manager를 이용해 주셔서 감사합니다" ;;
+
+                MSG_MIHOMO_CONFIG_NOT_FOUND) printf "Mihomo 설정: [찾을 수 없음 %s]" "$@" ;;
+                MSG_MIHOMO_CONFIG_FOUND) printf "Mihomo 설정: [%s]" "$@" ;;
+                MSG_MIHOMO_STATUS_RUNNING) printf "%s: [%s]" "$@" ;;
+                MSG_MIHOMO_STATUS_STOPPED) printf "%s: [%s]" "$@" ;;
+                MSG_MIHOMO_KERNEL_LINE) printf "%s: [%s]" "$@" ;;
+
+                *) printf "%s" "$key" ;;
+            esac
+            ;;
+        fr)
+            case "$key" in
+                TAG_SUCCESS) printf "Succès" ;;
+                TAG_ERROR) printf "Erreur" ;;
+                TAG_WARNING) printf "Info" ;;
+                TAG_VERSION) printf "Version" ;;
+                LABEL_FUNCTION) printf "Fonction" ;;
+                LABEL_STATUS) printf "Statut" ;;
+                LABEL_HELP) printf "Aide" ;;
+                LABEL_INIT) printf "Initialisation" ;;
+                LABEL_STEP) printf "Étape" ;;
+                LABEL_INFO) printf "Info" ;;
+                LABEL_CLEANUP) printf "Nettoyage" ;;
+                LABEL_OPTIONS) printf "Options" ;;
+                LABEL_MENU) printf "Menu principal" ;;
+
+                MSG_MACOS_ONLY) printf "Ce script ne prend en charge que macOS." ;;
+                MSG_WELCOME) printf "Bienvenue %s sur %s" "$@" ;;
+                MSG_PRESS_ENTER) printf "Appuyez sur Entrée pour continuer..." ;;
+                MSG_REQUIRE_SUDO_TITLE) printf "Des privilèges système sont requis pour gérer le noyau." ;;
+                MSG_REQUIRE_SUDO_DESC) printf "Note : les opérations démarrer/arrêter/redémarrer/état nécessitent sudo." ;;
+                MSG_REQUIRE_SUDO_PROMPT) printf "Autorisation : saisissez le mot de passe macOS pour continuer." ;;
+                MSG_SUDO_OK) printf "Vérification des privilèges réussie." ;;
+                MSG_SUDO_FAIL) printf "Échec de la vérification du mot de passe. Veuillez réessayer." ;;
+
+                MSG_INIT_CHECK_DIRS) printf "[Init] Vérification de la structure des répertoires..." ;;
+                MSG_INIT_SET_PERMS) printf "[Init] Définition des permissions des répertoires..." ;;
+                MSG_NEED_ADMIN) printf "Des privilèges administrateur sont requis pour créer les répertoires." ;;
+                MSG_NO_PERMISSION) printf "Permissions insuffisantes pour créer les répertoires." ;;
+                MSG_CORE_DIR_CREATE) printf "Création du répertoire core : %s" "$@" ;;
+                MSG_CORE_DIR_EXISTS) printf "Le répertoire core existe : %s" "$@" ;;
+                MSG_CONFIG_DIR_CREATE) printf "Création du répertoire config : %s" "$@" ;;
+                MSG_CONFIG_DIR_EXISTS) printf "Le répertoire config existe : %s" "$@" ;;
+                MSG_DATA_DIR_CREATE) printf "Création du répertoire data : %s" "$@" ;;
+                MSG_DATA_DIR_EXISTS) printf "Le répertoire data existe : %s" "$@" ;;
+                MSG_LOG_DIR_CREATE) printf "Création du répertoire logs : %s" "$@" ;;
+                MSG_LOG_DIR_EXISTS) printf "Le répertoire logs existe : %s" "$@" ;;
+                MSG_RUNTIME_DIR_CREATE) printf "Création du répertoire runtime : %s" "$@" ;;
+                MSG_RUNTIME_DIR_EXISTS) printf "Le répertoire runtime existe : %s" "$@" ;;
+                MSG_DIRS_PERMS_OK) printf "Permissions des répertoires définies." ;;
+
+                MSG_CORE_DIR_MISSING_CREATE) printf "Répertoire core manquant. Création de la structure..." ;;
+                MSG_DIR_CREATE_FAIL) printf "Échec de la création de la structure des répertoires." ;;
+                MSG_CORE_DIR_ENTER_FAIL) printf "Impossible d'entrer dans le répertoire core." ;;
+
+                MSG_STATUS_STOPPED) printf "Arrêté" ;;
+                MSG_STATUS_RUNNING) printf "En cours" ;;
+                MSG_STATUS_LABEL) printf "Statut Mihomo" ;;
+                MSG_KERNEL_LABEL) printf "Noyau Mihomo" ;;
+                MSG_CONFIG_LABEL) printf "Config Mihomo" ;;
+                MSG_CONFIG_NOT_FOUND) printf "Introuvable %s" "$@" ;;
+                MSG_STATUS_SECTION) printf "• Statut:" ;;
+                MSG_KERNEL_FILES_SECTION) printf "• Fichiers du noyau:" ;;
+                MSG_BACKUP_SECTION) printf "• Sauvegardes:" ;;
+                MSG_KERNEL_FILE_OK) printf "✓ Fichier du noyau présent" ;;
+                MSG_KERNEL_FILE_NOEXEC) printf "✗ Fichier du noyau non exécutable" ;;
+                MSG_KERNEL_FILE_MISSING) printf "✗ Fichier du noyau introuvable" ;;
+                MSG_KERNEL_VERSION_INFO) printf "Version : %s" "$@" ;;
+                MSG_KERNEL_DISPLAY_NAME) printf "Nom affiché : %s" "$@" ;;
+                MSG_KERNEL_DISPLAY_NAME_PARSE_FAIL) printf "Nom affiché : %s (échec d'analyse)" "$@" ;;
+                MSG_BACKUP_FOUND) printf "✓ Sauvegarde trouvée" ;;
+                MSG_BACKUP_LATEST) printf "Dernière sauvegarde : %s" "$@" ;;
+                MSG_BACKUP_VERSION) printf "Version de sauvegarde : %s" "$@" ;;
+                MSG_BACKUP_VERSION_UNKNOWN) printf "Version de sauvegarde : inconnue" ;;
+                MSG_BACKUP_TIME) printf "Heure de sauvegarde : %s" "$@" ;;
+                MSG_BACKUP_NONE) printf "⚠️  Aucune sauvegarde" ;;
+
+                MSG_LIST_BACKUPS_TITLE) printf "Lister toutes les sauvegardes du noyau" ;;
+                MSG_NO_BACKUPS) printf "Aucun fichier de sauvegarde" ;;
+                MSG_BACKUP_LIST_TITLE) printf "[Info] Sauvegardes disponibles (les plus récentes d'abord) :" ;;
+                MSG_BACKUP_LIST_COLUMNS) printf "N° | Version | Heure de sauvegarde" ;;
+                MSG_BACKUP_TOTAL) printf "Total des sauvegardes : %s" "$@" ;;
+
+                MSG_SWITCH_TITLE) printf "Changer de version du noyau" ;;
+                MSG_SWITCH_PROMPT) printf "Entrez le numéro de sauvegarde (Entrée pour revenir) : " ;;
+                MSG_INVALID_NUMBER) printf "Veuillez saisir un nombre valide." ;;
+                MSG_BACKUP_NO_MATCH) printf "Aucun numéro de sauvegarde correspondant." ;;
+                MSG_SWITCH_START) printf "[Étape] Démarrage du changement de noyau..." ;;
+                MSG_BACKUP_SELECTED) printf "[Info] Sauvegarde sélectionnée : %s" "$@" ;;
+                MSG_CURRENT_KERNEL_VERSION) printf "[Info] Version actuelle du noyau : %s" "$@" ;;
+                MSG_CURRENT_KERNEL_MISSING) printf "[Info] Noyau actuel introuvable" ;;
+                MSG_SWITCH_CONFIRM) printf "Confirmer le changement vers cette version ? (y/n) : " ;;
+                MSG_OP_CANCELLED) printf "Opération annulée." ;;
+                MSG_BACKUP_CURRENT_KERNEL) printf "[Étape] Sauvegarde du noyau actuel -> %s" "$@" ;;
+                MSG_KERNEL_REPLACED) printf "[Étape] Noyau remplacé par : %s" "$@" ;;
+                MSG_TEMP_BACKUP_REMOVED) printf "[Étape] Sauvegarde temporaire supprimée : %s" "$@" ;;
+                MSG_SWITCH_DONE) printf "[Terminé] Changement de noyau terminé" ;;
+
+                MSG_LIST_BACKUPS_SIMPLE_TITLE) printf "[Info] Sauvegardes disponibles:" ;;
+                MSG_INSTALL_TITLE) printf "Installer/Mettre à jour le noyau Mihomo" ;;
+                MSG_SELECT_GITHUB_USER) printf "Sélectionnez l'utilisateur GitHub pour le téléchargement :" ;;
+                MSG_SELECT_USER_PROMPT) printf "Choisir l'utilisateur (par défaut 1) : " ;;
+                MSG_SELECTED_GITHUB_USER) printf "[Info] Utilisateur GitHub sélectionné : %s" "$@" ;;
+                MSG_GET_VERSION_INFO) printf "[Étape] Récupération des infos de version..." ;;
+                MSG_VERSION_INFO_FAIL) printf "Impossible de récupérer les infos de version ou version inexistante." ;;
+                MSG_VERSION_INFO) printf "[Info] Version : %s" "$@" ;;
+                MSG_ARCH_UNSUPPORTED) printf "Architecture non prise en charge : %s" "$@" ;;
+                MSG_ARCH_DETECTED) printf "[Info] Architecture : %s" "$@" ;;
+                MSG_DOWNLOAD_INFO) printf "[Étape] Infos de téléchargement :" ;;
+                MSG_DOWNLOAD_URL) printf "  URL de téléchargement : %s" "$@" ;;
+                MSG_VERSION_LABEL) printf "  Version : %s" "$@" ;;
+                MSG_DOWNLOAD_CONFIRM) printf "Télécharger et installer cette version ? (y/n) : " ;;
+                MSG_DOWNLOAD_START) printf "[Étape] Téléchargement du noyau (peut prendre quelques minutes)..." ;;
+                MSG_DOWNLOAD_RETRY) printf "Échec du téléchargement. Nouvelle tentative %s/%s..." "$@" ;;
+                MSG_DOWNLOAD_OK) printf "Téléchargement terminé" ;;
+                MSG_EXTRACT_START) printf "[Étape] Extraction du noyau..." ;;
+                MSG_BACKUP_NEW_KERNEL) printf "[Étape] Sauvegarde du nouveau noyau -> %s" "$@" ;;
+                MSG_INSTALL_DONE) printf "[Terminé] Installation du noyau réussie" ;;
+                MSG_EXTRACT_FAIL) printf "Échec de l'extraction." ;;
+                MSG_DOWNLOAD_FAIL) printf "Échec du téléchargement après %s tentatives." "$@" ;;
+
+                MSG_VERSION_PARSE_FAIL) printf "Échec d'analyse" ;;
+                MSG_NOT_INSTALLED) printf "Non installé" ;;
+
+                MSG_START_TITLE) printf "Démarrer le noyau Mihomo" ;;
+                MSG_KERNEL_RUNNING) printf "Le noyau Mihomo est déjà en cours d'exécution" ;;
+                MSG_START_PRECHECK) printf "[Étape] Pré-vérification avant démarrage..." ;;
+                MSG_KERNEL_NOT_FOUND) printf "Fichier du noyau Mihomo introuvable" ;;
+                MSG_KERNEL_NOT_EXEC) printf "Fichier du noyau Mihomo non exécutable" ;;
+                MSG_ADD_EXEC) printf "[Étape] Ajout du droit d'exécution..." ;;
+                MSG_ADD_EXEC_FAIL) printf "Impossible d'ajouter le droit d'exécution" ;;
+                MSG_CONFIG_DEFAULT_MISSING) printf "Fichier de config par défaut introuvable : %s" "$@" ;;
+                MSG_CONFIG_SCAN) printf "[Étape] Recherche d'autres fichiers de config..." ;;
+                MSG_CONFIG_NONE) printf "Aucun fichier de config dans le répertoire." ;;
+                MSG_CONFIG_PUT_HINT) printf "Placez votre fichier de config dans %s" "$@" ;;
+                MSG_CONFIG_AVAILABLE) printf "[Info] Fichiers de config disponibles :" ;;
+                MSG_CONFIG_LIST_COLUMNS) printf "N° | Chemin du fichier de config" ;;
+                MSG_CONFIG_SELECT_PROMPT) printf "Choisissez le numéro du fichier de config (0 pour annuler) : " ;;
+                MSG_CONFIG_SELECTED) printf "Fichier de config sélectionné : %s" "$@" ;;
+                MSG_CONFIG_INVALID) printf "Sélection invalide." ;;
+                MSG_CONFIG_READ_FAIL) printf "Fichier de config illisible : %s" "$@" ;;
+                MSG_CONFIG_PERM_HINT) printf "Vérifiez les permissions du fichier de config." ;;
+                MSG_CONFIG_EMPTY) printf "Fichier de config vide : %s" "$@" ;;
+                MSG_CONFIG_EMPTY_HINT) printf "Assurez-vous que le fichier de config contient des données valides." ;;
+                MSG_CONFIG_WILL_USE) printf "Utilisation du fichier de config : %s" "$@" ;;
+                MSG_START_PROCESS) printf "[Étape] Démarrage du processus du noyau..." ;;
+                MSG_START_COMMAND) printf "Commande de démarrage : %s" "$@" ;;
+                MSG_PID_WRITTEN) printf "PID écrit dans : %s" "$@" ;;
+                MSG_KERNEL_STARTED) printf "Noyau Mihomo démarré" ;;
+                MSG_PROCESS_ID) printf "ID de processus : %s" "$@" ;;
+                MSG_KERNEL_START_FAIL) printf "Échec du démarrage du noyau Mihomo" ;;
+
+                MSG_STOP_TITLE) printf "Arrêter le noyau Mihomo" ;;
+                MSG_KERNEL_NOT_RUNNING) printf "Le noyau Mihomo n'est pas en cours d'exécution" ;;
+                MSG_STOPPING_KERNEL) printf "[Étape] Arrêt du noyau Mihomo..." ;;
+                MSG_PIDS_FOUND) printf "ID(s) de processus trouvés : %s" "$@" ;;
+                MSG_STOPPING_PROCESS) printf "[Étape] Arrêt du processus %s..." "$@" ;;
+                MSG_FORCE_STOPPING) printf "Arrêt forcé des processus restants..." ;;
+                MSG_KERNEL_STOP_FAIL) printf "Échec de l'arrêt du noyau Mihomo" ;;
+                MSG_KERNEL_STOP_HINT) printf "Essayez d'arrêter le noyau via Activity Monitor." ;;
+                MSG_KERNEL_STOPPED) printf "Noyau Mihomo arrêté" ;;
+                MSG_PROCESS_NOT_RUNNING) printf "Le processus du noyau Mihomo n'est pas en cours d'exécution" ;;
+                MSG_PID_CLEANED) printf "Fichier PID supprimé : %s" "$@" ;;
+
+                MSG_RESTART_TITLE) printf "Redémarrer le noyau Mihomo" ;;
+                MSG_KERNEL_MENU_TITLE) printf "Contrôle du noyau" ;;
+                MSG_KERNEL_MENU_PROMPT) printf "Choisissez une action :" ;;
+                MSG_MENU_START) printf "1) Démarrer le noyau" ;;
+                MSG_MENU_STOP) printf "2) Arrêter le noyau" ;;
+                MSG_MENU_RESTART) printf "3) Redémarrer le noyau" ;;
+                MSG_MENU_BACK) printf "0) Retour au menu principal" ;;
+                MSG_MENU_CHOICE_0_3) printf "Choix (0-3) : " ;;
+                MSG_MENU_INVALID) printf "Choix invalide. Réessayez." ;;
+
+                MSG_LOGS_TITLE) printf "Afficher les logs du noyau Mihomo" ;;
+                MSG_LOG_FILE_MISSING) printf "Fichier de log introuvable : %s" "$@" ;;
+                MSG_LOG_FILE_HINT) printf "Démarrez le noyau pour générer les logs." ;;
+                MSG_LOG_FILE_PATH) printf "[Info] Chemin du fichier de log : %s" "$@" ;;
+                MSG_LOG_FILE_SIZE) printf "[Info] Taille du log : %s" "$@" ;;
+                MSG_LOG_FILE_LINES) printf "[Info] Nombre de lignes : %s" "$@" ;;
+                MSG_LOG_VIEW_OPTIONS) printf "[Options] Comment afficher les logs :" ;;
+                MSG_LOG_OPTION_TAIL) printf "1) Afficher les 50 dernières lignes" ;;
+                MSG_LOG_OPTION_FOLLOW) printf "2) Suivre les logs en temps réel (Ctrl+C pour quitter)" ;;
+                MSG_LOG_OPTION_LESS) printf "3) Voir le log complet avec less (q pour quitter)" ;;
+                MSG_LOG_OPTION_BACK) printf "0) Retour au menu principal" ;;
+                MSG_LOG_TAIL_HEADER) printf "[Info] Dernières 50 lignes :" ;;
+                MSG_LOG_FOLLOW_HEADER) printf "[Info] Suivi des logs (Ctrl+C pour quitter) :" ;;
+                MSG_LOG_LESS_HEADER) printf "[Info] Affichage avec less (q pour quitter) :" ;;
+
+                MSG_HELP_TITLE) printf "Aide" ;;
+                MSG_HELP_ARGS) printf "Arguments de ligne de commande :" ;;
+                MSG_HELP_DIR_ARG) printf "  -d|--directory <path>  Répertoire d'installation ClashFox" ;;
+                MSG_HELP_LANG_ARG) printf "  -l|--lang <zh|en|ja|ko|fr|de|ru|auto>  Langue de l'interface" ;;
+                MSG_HELP_STATUS) printf "  status                 Afficher l'état du noyau" ;;
+                MSG_HELP_LIST) printf "  list                   Lister toutes les sauvegardes" ;;
+                MSG_HELP_SWITCH) printf "  switch                 Changer la version du noyau" ;;
+                MSG_HELP_LOGS) printf "  logs|log               Afficher les logs du noyau" ;;
+                MSG_HELP_CLEAN) printf "  clean|clear            Nettoyer les logs" ;;
+                MSG_HELP_HELP) printf "  help|-h                Afficher l'aide" ;;
+                MSG_HELP_VERSION) printf "  version|-v             Afficher la version" ;;
+                MSG_HELP_MENU) printf "Menu interactif:" ;;
+                MSG_MENU_INSTALL) printf "1) Installer/Mettre à jour le noyau Mihomo" ;;
+                MSG_MENU_CONTROL) printf "2) Contrôle du noyau (démarrer/arrêter/redémarrer)" ;;
+                MSG_MENU_STATUS) printf "3) Afficher l'état actuel" ;;
+                MSG_MENU_SWITCH) printf "4) Changer la version du noyau" ;;
+                MSG_MENU_LIST) printf "5) Lister toutes les sauvegardes" ;;
+                MSG_MENU_LOGS) printf "6) Afficher les logs du noyau" ;;
+                MSG_MENU_CLEAN) printf "7) Nettoyer les logs" ;;
+                MSG_MENU_HELP) printf "8) Afficher l'aide" ;;
+                MSG_MENU_EXIT) printf "0) Quitter" ;;
+                MSG_HELP_NOTE) printf "Cet outil gère les versions du noyau et contrôle son état (démarrer/arrêter/redémarrer)." ;;
+
+                MSG_CLEAN_TITLE) printf "Nettoyer les anciens logs" ;;
+                MSG_CLEAN_CURRENT_LOG) printf "[Info] Log actuel : %s" "$@" ;;
+                MSG_CLEAN_LOG_SIZE) printf "[Info] Taille du log : %s" "$@" ;;
+                MSG_CLEAN_OLD_COUNT) printf "[Info] Nombre d'anciens logs : %s" "$@" ;;
+                MSG_CLEAN_OLD_SIZE) printf "[Info] Taille totale des anciens logs : %s" "$@" ;;
+                MSG_CLEAN_OPTIONS) printf "[Options de nettoyage]" ;;
+                MSG_CLEAN_ALL) printf "1) Supprimer tous les anciens logs" ;;
+                MSG_CLEAN_7D) printf "2) Conserver 7 jours, supprimer le reste" ;;
+                MSG_CLEAN_30D) printf "3) Conserver 30 jours, supprimer le reste" ;;
+                MSG_CLEAN_CANCEL) printf "0) Annuler" ;;
+                MSG_CLEAN_PROMPT) printf "Choisissez une option (0-3) : " ;;
+                MSG_CLEAN_DONE_ALL) printf "Tous les anciens logs ont été supprimés" ;;
+                MSG_CLEAN_DONE_7D) printf "Logs de plus de 7 jours supprimés" ;;
+                MSG_CLEAN_DONE_30D) printf "Logs de plus de 30 jours supprimés" ;;
+                MSG_CLEAN_CANCELLED) printf "Nettoyage annulé" ;;
+                MSG_CLEAN_INVALID) printf "Sélection invalide" ;;
+
+                MSG_LOG_ROTATE_DATE) printf "Rotation des logs par date : %s" "$@" ;;
+                MSG_LOG_ROTATE_SIZE) printf "Rotation des logs par taille : %s" "$@" ;;
+
+                MSG_MAIN_STATUS_TITLE) printf "Infos du noyau actuel" ;;
+                MSG_MAIN_MENU_TITLE) printf "Menu principal" ;;
+                MSG_KERNEL_STATUS_CHECK) printf "Vérification de l'état du noyau" ;;
+                MSG_MAIN_PROMPT) printf "Choisissez une option :" ;;
+                MSG_MAIN_LINE_1) printf "  1) Installer/Mettre à jour le noyau Mihomo   2) Contrôle du noyau (démarrer/arrêter/redémarrer)" ;;
+                MSG_MAIN_LINE_2) printf "  3) Afficher l'état actuel                    4) Changer la version du noyau" ;;
+                MSG_MAIN_LINE_3) printf "  5) Lister toutes les sauvegardes             6) Afficher les logs du noyau" ;;
+                MSG_MAIN_LINE_4) printf "  7) Nettoyer les logs                         8) Afficher l'aide" ;;
+                MSG_MAIN_LINE_5) printf "  0) Quitter" ;;
+
+                MSG_CLEANUP_STOPPING) printf "[Nettoyage] Arrêt du contrôleur de logs (PID : %s)..." "$@" ;;
+                MSG_CLEANUP_FORCE) printf "[Nettoyage] Arrêt forcé du contrôleur de logs..." ;;
+                MSG_CLEANUP_FAIL) printf "[Nettoyage] Échec de l'arrêt du contrôleur de logs (PID : %s)" "$@" ;;
+                MSG_CLEANUP_OK) printf "Contrôleur de logs arrêté" ;;
+                MSG_EXIT_ABNORMAL) printf "[Quitter] Programme interrompu de manière inattendue" ;;
+
+                MSG_ARG_DIR_REQUIRED) printf "-d/--directory requiert un chemin de répertoire." ;;
+                MSG_ARG_LANG_REQUIRED) printf "-l/--lang requiert une langue (zh|en|ja|ko|fr|de|ru|auto)." ;;
+                MSG_ARG_LANG_INVALID) printf "Langue invalide : %s (supportées : zh|en|ja|ko|fr|de|ru|auto)" "$@" ;;
+                MSG_UNKNOWN_COMMAND) printf "Commande inconnue : %s" "$@" ;;
+                MSG_AVAILABLE_COMMANDS) printf "Commandes disponibles : status, list, switch, logs, clean, help, version" ;;
+                MSG_AVAILABLE_ARGS) printf "Arguments disponibles : -d/--directory <path> - répertoire d'installation ClashFox; -l/--lang <zh|en|ja|ko|fr|de|ru|auto> - langue UI" ;;
+
+                MSG_SAVED_DIR_LOADED) printf "Répertoire enregistré chargé : %s" "$@" ;;
+                MSG_SAVED_DIR_NOT_FOUND) printf "Aucun répertoire enregistré. Utilisation par défaut : %s" "$@" ;;
+                MSG_DIR_SAVED) printf "Répertoire enregistré dans la config : %s" "$@" ;;
+
+                MSG_DIR_SELECT_TITLE) printf "Choisir le répertoire d'installation ClashFox" ;;
+                MSG_DEFAULT_DIR_CURRENT) printf "Répertoire par défaut actuel : %s" "$@" ;;
+                MSG_USE_DEFAULT_DIR) printf "Utiliser le répertoire par défaut ? (y/n) : " ;;
+                MSG_CUSTOM_DIR_PROMPT) printf "Entrez le répertoire d'installation personnalisé : " ;;
+                MSG_DIR_SET) printf "Répertoire d'installation ClashFox défini : %s" "$@" ;;
+                MSG_DIR_USE_DEFAULT) printf "Utilisation du répertoire par défaut : %s" "$@" ;;
+                MSG_DIR_INVALID_FALLBACK) printf "Entrée invalide. Utilisation du répertoire par défaut : %s" "$@" ;;
+                MSG_DIR_EXISTING) printf "Utilisation du répertoire existant : %s" "$@" ;;
+
+                MSG_LOG_CHECKER_START) printf "[Init] Démarrage du contrôleur de logs..." ;;
+                MSG_LOG_CHECKER_OK) printf "Contrôleur de logs démarré. PID : %s" "$@" ;;
+                MSG_APP_CHECK) printf "[Init] Vérification de l'installation de ClashFox..." ;;
+                MSG_APP_DIR_MISSING) printf "Répertoire ClashFox introuvable. Création..." ;;
+                MSG_APP_DIR_TARGET) printf "  Répertoire cible : %s" "$@" ;;
+                MSG_APP_DIR_CREATED) printf "Répertoire ClashFox créé : %s" "$@" ;;
+                MSG_APP_DIR_EXISTS) printf "ClashFox installé : %s" "$@" ;;
+
+                MSG_MAIN_CHOICE) printf "Entrez un choix (0-8) : " ;;
+                MSG_EXIT_THANKS) printf "[Quitter] Merci d'utiliser ClashFox Mihomo Kernel Manager" ;;
+
+                MSG_MIHOMO_CONFIG_NOT_FOUND) printf "Mihomo Config : [Introuvable %s]" "$@" ;;
+                MSG_MIHOMO_CONFIG_FOUND) printf "Mihomo Config : [%s]" "$@" ;;
+                MSG_MIHOMO_STATUS_RUNNING) printf "%s: [%s]" "$@" ;;
+                MSG_MIHOMO_STATUS_STOPPED) printf "%s: [%s]" "$@" ;;
+                MSG_MIHOMO_KERNEL_LINE) printf "%s: [%s]" "$@" ;;
+
+                *) printf "%s" "$key" ;;
+            esac
+            ;;
+        de)
+            case "$key" in
+                TAG_SUCCESS) printf "Erfolg" ;;
+                TAG_ERROR) printf "Fehler" ;;
+                TAG_WARNING) printf "Hinweis" ;;
+                TAG_VERSION) printf "Version" ;;
+                LABEL_FUNCTION) printf "Funktion" ;;
+                LABEL_STATUS) printf "Status" ;;
+                LABEL_HELP) printf "Hilfe" ;;
+                LABEL_INIT) printf "Initialisierung" ;;
+                LABEL_STEP) printf "Schritt" ;;
+                LABEL_INFO) printf "Info" ;;
+                LABEL_CLEANUP) printf "Bereinigung" ;;
+                LABEL_OPTIONS) printf "Optionen" ;;
+                LABEL_MENU) printf "Hauptmenü" ;;
+
+                MSG_MACOS_ONLY) printf "Dieses Skript unterstützt nur macOS." ;;
+                MSG_WELCOME) printf "Willkommen %s bei %s" "$@" ;;
+                MSG_PRESS_ENTER) printf "Drücken Sie Enter zum Fortfahren..." ;;
+                MSG_REQUIRE_SUDO_TITLE) printf "Systemrechte sind für die Kernelverwaltung erforderlich." ;;
+                MSG_REQUIRE_SUDO_DESC) printf "Hinweis: Start/Stopp/Neustart/Status erfordern sudo-Rechte." ;;
+                MSG_REQUIRE_SUDO_PROMPT) printf "Autorisierung: Bitte macOS-Passwort eingeben." ;;
+                MSG_SUDO_OK) printf "Rechteprüfung bestanden." ;;
+                MSG_SUDO_FAIL) printf "Passwortprüfung fehlgeschlagen. Bitte erneut versuchen." ;;
+
+                MSG_INIT_CHECK_DIRS) printf "[Init] Prüfe Verzeichnisstruktur..." ;;
+                MSG_INIT_SET_PERMS) printf "[Init] Setze Verzeichnisberechtigungen..." ;;
+                MSG_NEED_ADMIN) printf "Administratorrechte sind zum Erstellen von Verzeichnissen erforderlich." ;;
+                MSG_NO_PERMISSION) printf "Unzureichende Berechtigungen zum Erstellen von Verzeichnissen." ;;
+                MSG_CORE_DIR_CREATE) printf "Erstelle Core-Verzeichnis: %s" "$@" ;;
+                MSG_CORE_DIR_EXISTS) printf "Core-Verzeichnis vorhanden: %s" "$@" ;;
+                MSG_CONFIG_DIR_CREATE) printf "Erstelle Config-Verzeichnis: %s" "$@" ;;
+                MSG_CONFIG_DIR_EXISTS) printf "Config-Verzeichnis vorhanden: %s" "$@" ;;
+                MSG_DATA_DIR_CREATE) printf "Erstelle Data-Verzeichnis: %s" "$@" ;;
+                MSG_DATA_DIR_EXISTS) printf "Data-Verzeichnis vorhanden: %s" "$@" ;;
+                MSG_LOG_DIR_CREATE) printf "Erstelle Log-Verzeichnis: %s" "$@" ;;
+                MSG_LOG_DIR_EXISTS) printf "Log-Verzeichnis vorhanden: %s" "$@" ;;
+                MSG_RUNTIME_DIR_CREATE) printf "Erstelle Runtime-Verzeichnis: %s" "$@" ;;
+                MSG_RUNTIME_DIR_EXISTS) printf "Runtime-Verzeichnis vorhanden: %s" "$@" ;;
+                MSG_DIRS_PERMS_OK) printf "Verzeichnisberechtigungen gesetzt." ;;
+
+                MSG_CORE_DIR_MISSING_CREATE) printf "Core-Verzeichnis fehlt. Struktur wird erstellt..." ;;
+                MSG_DIR_CREATE_FAIL) printf "Erstellen der Verzeichnisstruktur fehlgeschlagen." ;;
+                MSG_CORE_DIR_ENTER_FAIL) printf "Core-Verzeichnis kann nicht betreten werden." ;;
+
+                MSG_STATUS_STOPPED) printf "Gestoppt" ;;
+                MSG_STATUS_RUNNING) printf "Läuft" ;;
+                MSG_STATUS_LABEL) printf "Mihomo-Status" ;;
+                MSG_KERNEL_LABEL) printf "Mihomo-Kernel" ;;
+                MSG_CONFIG_LABEL) printf "Mihomo-Konfig" ;;
+                MSG_CONFIG_NOT_FOUND) printf "Nicht gefunden: %s" "$@" ;;
+                MSG_STATUS_SECTION) printf "• Status:" ;;
+                MSG_KERNEL_FILES_SECTION) printf "• Kernel-Dateiinfo:" ;;
+                MSG_BACKUP_SECTION) printf "• Backup-Info:" ;;
+                MSG_KERNEL_FILE_OK) printf "✓ Kernel-Datei vorhanden" ;;
+                MSG_KERNEL_FILE_NOEXEC) printf "✗ Kernel-Datei nicht ausführbar" ;;
+                MSG_KERNEL_FILE_MISSING) printf "✗ Kernel-Datei fehlt" ;;
+                MSG_KERNEL_VERSION_INFO) printf "Version: %s" "$@" ;;
+                MSG_KERNEL_DISPLAY_NAME) printf "Anzeigename: %s" "$@" ;;
+                MSG_KERNEL_DISPLAY_NAME_PARSE_FAIL) printf "Anzeigename: %s (Parse-Fehler)" "$@" ;;
+                MSG_BACKUP_FOUND) printf "✓ Backup gefunden" ;;
+                MSG_BACKUP_LATEST) printf "Letztes Backup: %s" "$@" ;;
+                MSG_BACKUP_VERSION) printf "Backup-Version: %s" "$@" ;;
+                MSG_BACKUP_VERSION_UNKNOWN) printf "Backup-Version: Unbekannt" ;;
+                MSG_BACKUP_TIME) printf "Backup-Zeit: %s" "$@" ;;
+                MSG_BACKUP_NONE) printf "⚠️  Keine Backups gefunden" ;;
+
+                MSG_LIST_BACKUPS_TITLE) printf "Alle Kernel-Backups auflisten" ;;
+                MSG_NO_BACKUPS) printf "Keine Backup-Dateien" ;;
+                MSG_BACKUP_LIST_TITLE) printf "[Info] Verfügbare Backups (neueste zuerst):" ;;
+                MSG_BACKUP_LIST_COLUMNS) printf "Nr. | Version | Backup-Zeit" ;;
+                MSG_BACKUP_TOTAL) printf "Backups gesamt: %s" "$@" ;;
+
+                MSG_SWITCH_TITLE) printf "Kernel-Version wechseln" ;;
+                MSG_SWITCH_PROMPT) printf "Backup-Nummer eingeben (Enter für zurück): " ;;
+                MSG_INVALID_NUMBER) printf "Bitte eine gültige Zahl eingeben." ;;
+                MSG_BACKUP_NO_MATCH) printf "Keine passende Backup-Nummer gefunden." ;;
+                MSG_SWITCH_START) printf "[Schritt] Kernel-Wechsel starten..." ;;
+                MSG_BACKUP_SELECTED) printf "[Info] Gewähltes Backup: %s" "$@" ;;
+                MSG_CURRENT_KERNEL_VERSION) printf "[Info] Aktuelle Kernel-Version: %s" "$@" ;;
+                MSG_CURRENT_KERNEL_MISSING) printf "[Info] Aktueller Kernel nicht gefunden" ;;
+                MSG_SWITCH_CONFIRM) printf "Wechsel zu dieser Version bestätigen? (y/n): " ;;
+                MSG_OP_CANCELLED) printf "Vorgang abgebrochen." ;;
+                MSG_BACKUP_CURRENT_KERNEL) printf "[Schritt] Aktuellen Kernel gesichert -> %s" "$@" ;;
+                MSG_KERNEL_REPLACED) printf "[Schritt] Kernel ersetzt durch: %s" "$@" ;;
+                MSG_TEMP_BACKUP_REMOVED) printf "[Schritt] Temporäres Backup gelöscht: %s" "$@" ;;
+                MSG_SWITCH_DONE) printf "[Fertig] Kernel-Wechsel abgeschlossen" ;;
+
+                MSG_LIST_BACKUPS_SIMPLE_TITLE) printf "[Info] Verfügbare Backups:" ;;
+                MSG_INSTALL_TITLE) printf "Mihomo-Kernel installieren/aktualisieren" ;;
+                MSG_SELECT_GITHUB_USER) printf "GitHub-Benutzer für Download wählen:" ;;
+                MSG_SELECT_USER_PROMPT) printf "Benutzer wählen (Standard 1): " ;;
+                MSG_SELECTED_GITHUB_USER) printf "[Info] Gewählter GitHub-Benutzer: %s" "$@" ;;
+                MSG_GET_VERSION_INFO) printf "[Schritt] Neueste Versionsinfo abrufen..." ;;
+                MSG_VERSION_INFO_FAIL) printf "Versionsinfo konnte nicht abgerufen werden oder existiert nicht." ;;
+                MSG_VERSION_INFO) printf "[Info] Version: %s" "$@" ;;
+                MSG_ARCH_UNSUPPORTED) printf "Nicht unterstützte Architektur: %s" "$@" ;;
+                MSG_ARCH_DETECTED) printf "[Info] Architektur: %s" "$@" ;;
+                MSG_DOWNLOAD_INFO) printf "[Schritt] Download-Info:" ;;
+                MSG_DOWNLOAD_URL) printf "  Download-URL: %s" "$@" ;;
+                MSG_VERSION_LABEL) printf "  Version: %s" "$@" ;;
+                MSG_DOWNLOAD_CONFIRM) printf "Diese Version herunterladen und installieren? (y/n): " ;;
+                MSG_DOWNLOAD_START) printf "[Schritt] Kernel wird heruntergeladen (kann einige Minuten dauern)..." ;;
+                MSG_DOWNLOAD_RETRY) printf "Download fehlgeschlagen. Wiederhole %s/%s..." "$@" ;;
+                MSG_DOWNLOAD_OK) printf "Download abgeschlossen" ;;
+                MSG_EXTRACT_START) printf "[Schritt] Kernel wird entpackt..." ;;
+                MSG_BACKUP_NEW_KERNEL) printf "[Schritt] Neuer Kernel gesichert -> %s" "$@" ;;
+                MSG_INSTALL_DONE) printf "[Fertig] Kernel-Installation erfolgreich" ;;
+                MSG_EXTRACT_FAIL) printf "Entpacken fehlgeschlagen." ;;
+                MSG_DOWNLOAD_FAIL) printf "Download nach %s Versuchen fehlgeschlagen." "$@" ;;
+
+                MSG_VERSION_PARSE_FAIL) printf "Parse fehlgeschlagen" ;;
+                MSG_NOT_INSTALLED) printf "Nicht installiert" ;;
+
+                MSG_START_TITLE) printf "Mihomo-Kernel starten" ;;
+                MSG_KERNEL_RUNNING) printf "Mihomo-Kernel läuft bereits" ;;
+                MSG_START_PRECHECK) printf "[Schritt] Vorprüfung vor dem Start..." ;;
+                MSG_KERNEL_NOT_FOUND) printf "Mihomo-Kernel-Datei nicht gefunden" ;;
+                MSG_KERNEL_NOT_EXEC) printf "Mihomo-Kernel-Datei nicht ausführbar" ;;
+                MSG_ADD_EXEC) printf "[Schritt] Ausführungsrecht hinzufügen..." ;;
+                MSG_ADD_EXEC_FAIL) printf "Ausführungsrecht konnte nicht gesetzt werden" ;;
+                MSG_CONFIG_DEFAULT_MISSING) printf "Standard-Konfigurationsdatei nicht gefunden: %s" "$@" ;;
+                MSG_CONFIG_SCAN) printf "[Schritt] Andere Konfigurationsdateien prüfen..." ;;
+                MSG_CONFIG_NONE) printf "Keine Konfigurationsdateien im Config-Verzeichnis gefunden." ;;
+                MSG_CONFIG_PUT_HINT) printf "Konfigurationsdatei in %s ablegen" "$@" ;;
+                MSG_CONFIG_AVAILABLE) printf "[Info] Verfügbare Konfigurationsdateien:" ;;
+                MSG_CONFIG_LIST_COLUMNS) printf "Nr. | Pfad der Konfigurationsdatei" ;;
+                MSG_CONFIG_SELECT_PROMPT) printf "Konfigurationsdatei wählen (0 zum Abbrechen): " ;;
+                MSG_CONFIG_SELECTED) printf "Gewählte Konfigurationsdatei: %s" "$@" ;;
+                MSG_CONFIG_INVALID) printf "Ungültige Auswahl." ;;
+                MSG_CONFIG_READ_FAIL) printf "Konfigurationsdatei nicht lesbar: %s" "$@" ;;
+                MSG_CONFIG_PERM_HINT) printf "Berechtigungen der Konfigurationsdatei prüfen." ;;
+                MSG_CONFIG_EMPTY) printf "Konfigurationsdatei ist leer: %s" "$@" ;;
+                MSG_CONFIG_EMPTY_HINT) printf "Bitte sicherstellen, dass die Konfiguration gültige Inhalte enthält." ;;
+                MSG_CONFIG_WILL_USE) printf "Verwendete Konfigurationsdatei: %s" "$@" ;;
+                MSG_START_PROCESS) printf "[Schritt] Kernel-Prozess starten..." ;;
+                MSG_START_COMMAND) printf "Startbefehl: %s" "$@" ;;
+                MSG_PID_WRITTEN) printf "PID geschrieben nach: %s" "$@" ;;
+                MSG_KERNEL_STARTED) printf "Mihomo-Kernel gestartet" ;;
+                MSG_PROCESS_ID) printf "Prozess-ID: %s" "$@" ;;
+                MSG_KERNEL_START_FAIL) printf "Mihomo-Kernel konnte nicht gestartet werden" ;;
+
+                MSG_STOP_TITLE) printf "Mihomo-Kernel stoppen" ;;
+                MSG_KERNEL_NOT_RUNNING) printf "Mihomo-Kernel läuft nicht" ;;
+                MSG_STOPPING_KERNEL) printf "[Schritt] Mihomo-Kernel wird gestoppt..." ;;
+                MSG_PIDS_FOUND) printf "Prozess-IDs gefunden: %s" "$@" ;;
+                MSG_STOPPING_PROCESS) printf "[Schritt] Prozess %s wird gestoppt..." "$@" ;;
+                MSG_FORCE_STOPPING) printf "Verbleibende Prozesse werden zwangsweise beendet..." ;;
+                MSG_KERNEL_STOP_FAIL) printf "Mihomo-Kernel konnte nicht gestoppt werden" ;;
+                MSG_KERNEL_STOP_HINT) printf "Versuchen Sie, den Kernel im Activity Monitor zu stoppen." ;;
+                MSG_KERNEL_STOPPED) printf "Mihomo-Kernel gestoppt" ;;
+                MSG_PROCESS_NOT_RUNNING) printf "Mihomo-Kernel-Prozess läuft nicht" ;;
+                MSG_PID_CLEANED) printf "PID-Datei gelöscht: %s" "$@" ;;
+
+                MSG_RESTART_TITLE) printf "Mihomo-Kernel neu starten" ;;
+                MSG_KERNEL_MENU_TITLE) printf "Kernel-Steuerung" ;;
+                MSG_KERNEL_MENU_PROMPT) printf "Kernel-Aktion wählen:" ;;
+                MSG_MENU_START) printf "1) Kernel starten" ;;
+                MSG_MENU_STOP) printf "2) Kernel stoppen" ;;
+                MSG_MENU_RESTART) printf "3) Kernel neu starten" ;;
+                MSG_MENU_BACK) printf "0) Zurück zum Hauptmenü" ;;
+                MSG_MENU_CHOICE_0_3) printf "Auswahl (0-3): " ;;
+                MSG_MENU_INVALID) printf "Ungültige Auswahl. Bitte erneut eingeben." ;;
+
+                MSG_LOGS_TITLE) printf "Mihomo-Kernel-Logs anzeigen" ;;
+                MSG_LOG_FILE_MISSING) printf "Logdatei nicht gefunden: %s" "$@" ;;
+                MSG_LOG_FILE_HINT) printf "Kernel starten, um Logs zu erzeugen." ;;
+                MSG_LOG_FILE_PATH) printf "[Info] Pfad der Logdatei: %s" "$@" ;;
+                MSG_LOG_FILE_SIZE) printf "[Info] Loggröße: %s" "$@" ;;
+                MSG_LOG_FILE_LINES) printf "[Info] Logzeilen: %s" "$@" ;;
+                MSG_LOG_VIEW_OPTIONS) printf "[Optionen] Logs anzeigen:" ;;
+                MSG_LOG_OPTION_TAIL) printf "1) Letzte 50 Zeilen anzeigen" ;;
+                MSG_LOG_OPTION_FOLLOW) printf "2) Logs live verfolgen (Ctrl+C zum Beenden)" ;;
+                MSG_LOG_OPTION_LESS) printf "3) Vollständige Logs mit less anzeigen (q zum Beenden)" ;;
+                MSG_LOG_OPTION_BACK) printf "0) Zurück zum Hauptmenü" ;;
+                MSG_LOG_TAIL_HEADER) printf "[Info] Letzte 50 Logzeilen:" ;;
+                MSG_LOG_FOLLOW_HEADER) printf "[Info] Live-Loganzeige (Ctrl+C zum Beenden):" ;;
+                MSG_LOG_LESS_HEADER) printf "[Info] Anzeige mit less (q zum Beenden):" ;;
+
+                MSG_HELP_TITLE) printf "Hilfe" ;;
+                MSG_HELP_ARGS) printf "Kommandozeilenargumente:" ;;
+                MSG_HELP_DIR_ARG) printf "  -d|--directory <path>  ClashFox-Installationsverzeichnis" ;;
+                MSG_HELP_LANG_ARG) printf "  -l|--lang <zh|en|ja|ko|fr|de|ru|auto>  UI-Sprache" ;;
+                MSG_HELP_STATUS) printf "  status                 Aktuellen Kernelstatus anzeigen" ;;
+                MSG_HELP_LIST) printf "  list                   Alle Backups auflisten" ;;
+                MSG_HELP_SWITCH) printf "  switch                 Kernel-Version wechseln" ;;
+                MSG_HELP_LOGS) printf "  logs|log               Kernel-Logs anzeigen" ;;
+                MSG_HELP_CLEAN) printf "  clean|clear            Logs bereinigen" ;;
+                MSG_HELP_HELP) printf "  help|-h                Hilfe anzeigen" ;;
+                MSG_HELP_VERSION) printf "  version|-v             Version anzeigen" ;;
+                MSG_HELP_MENU) printf "Interaktives Menü:" ;;
+                MSG_MENU_INSTALL) printf "1) Mihomo-Kernel installieren/aktualisieren" ;;
+                MSG_MENU_CONTROL) printf "2) Kernel-Steuerung (start/stop/restart)" ;;
+                MSG_MENU_STATUS) printf "3) Aktuellen Status anzeigen" ;;
+                MSG_MENU_SWITCH) printf "4) Kernel-Version wechseln" ;;
+                MSG_MENU_LIST) printf "5) Alle Backups auflisten" ;;
+                MSG_MENU_LOGS) printf "6) Kernel-Logs anzeigen" ;;
+                MSG_MENU_CLEAN) printf "7) Logs bereinigen" ;;
+                MSG_MENU_HELP) printf "8) Hilfe anzeigen" ;;
+                MSG_MENU_EXIT) printf "0) Beenden" ;;
+                MSG_HELP_NOTE) printf "Dieses Tool verwaltet Kernel-Versionen und steuert den Kernelstatus (start/stop/restart)." ;;
+
+                MSG_CLEAN_TITLE) printf "Alte Logs bereinigen" ;;
+                MSG_CLEAN_CURRENT_LOG) printf "[Info] Aktuelle Logdatei: %s" "$@" ;;
+                MSG_CLEAN_LOG_SIZE) printf "[Info] Loggröße: %s" "$@" ;;
+                MSG_CLEAN_OLD_COUNT) printf "[Info] Anzahl alter Logs: %s" "$@" ;;
+                MSG_CLEAN_OLD_SIZE) printf "[Info] Gesamtgröße alter Logs: %s" "$@" ;;
+                MSG_CLEAN_OPTIONS) printf "[Bereinigungsoptionen]" ;;
+                MSG_CLEAN_ALL) printf "1) Alle alten Logs löschen" ;;
+                MSG_CLEAN_7D) printf "2) Letzte 7 Tage behalten, ältere löschen" ;;
+                MSG_CLEAN_30D) printf "3) Letzte 30 Tage behalten, ältere löschen" ;;
+                MSG_CLEAN_CANCEL) printf "0) Abbrechen" ;;
+                MSG_CLEAN_PROMPT) printf "Bereinigungsoption wählen (0-3): " ;;
+                MSG_CLEAN_DONE_ALL) printf "Alle alten Logs gelöscht" ;;
+                MSG_CLEAN_DONE_7D) printf "Logs älter als 7 Tage gelöscht" ;;
+                MSG_CLEAN_DONE_30D) printf "Logs älter als 30 Tage gelöscht" ;;
+                MSG_CLEAN_CANCELLED) printf "Bereinigung abgebrochen" ;;
+                MSG_CLEAN_INVALID) printf "Ungültige Auswahl" ;;
+
+                MSG_LOG_ROTATE_DATE) printf "Logrotation nach Datum: %s" "$@" ;;
+                MSG_LOG_ROTATE_SIZE) printf "Logrotation nach Größe: %s" "$@" ;;
+
+                MSG_MAIN_STATUS_TITLE) printf "Aktuelle Kernel-Info" ;;
+                MSG_MAIN_MENU_TITLE) printf "Hauptmenü" ;;
+                MSG_KERNEL_STATUS_CHECK) printf "Kernelstatus prüfen" ;;
+                MSG_MAIN_PROMPT) printf "Option auswählen:" ;;
+                MSG_MAIN_LINE_1) printf "  1) Mihomo-Kernel installieren/aktualisieren   2) Kernel-Steuerung (start/stop/restart)" ;;
+                MSG_MAIN_LINE_2) printf "  3) Aktuellen Status anzeigen                  4) Kernel-Version wechseln" ;;
+                MSG_MAIN_LINE_3) printf "  5) Alle Backups auflisten                     6) Kernel-Logs anzeigen" ;;
+                MSG_MAIN_LINE_4) printf "  7) Logs bereinigen                            8) Hilfe anzeigen" ;;
+                MSG_MAIN_LINE_5) printf "  0) Beenden" ;;
+
+                MSG_CLEANUP_STOPPING) printf "[Bereinigung] Log-Checker wird gestoppt (PID: %s)..." "$@" ;;
+                MSG_CLEANUP_FORCE) printf "[Bereinigung] Log-Checker wird zwangsweise beendet..." ;;
+                MSG_CLEANUP_FAIL) printf "[Bereinigung] Log-Checker konnte nicht gestoppt werden (PID: %s)" "$@" ;;
+                MSG_CLEANUP_OK) printf "Log-Checker gestoppt" ;;
+                MSG_EXIT_ABNORMAL) printf "[Beenden] Programm unerwartet beendet" ;;
+
+                MSG_ARG_DIR_REQUIRED) printf "-d/--directory erfordert einen Verzeichnispfad." ;;
+                MSG_ARG_LANG_REQUIRED) printf "-l/--lang erfordert eine Sprache (zh|en|ja|ko|fr|de|ru|auto)." ;;
+                MSG_ARG_LANG_INVALID) printf "Ungültige Sprache: %s (unterstützt: zh|en|ja|ko|fr|de|ru|auto)" "$@" ;;
+                MSG_UNKNOWN_COMMAND) printf "Unbekannter Befehl: %s" "$@" ;;
+                MSG_AVAILABLE_COMMANDS) printf "Verfügbare Befehle: status, list, switch, logs, clean, help, version" ;;
+                MSG_AVAILABLE_ARGS) printf "Verfügbare Argumente: -d/--directory <path> - ClashFox-Installationsverzeichnis; -l/--lang <zh|en|ja|ko|fr|de|ru|auto> - UI-Sprache" ;;
+
+                MSG_SAVED_DIR_LOADED) printf "Gespeichertes Verzeichnis geladen: %s" "$@" ;;
+                MSG_SAVED_DIR_NOT_FOUND) printf "Kein gespeichertes Verzeichnis gefunden. Verwende Standard: %s" "$@" ;;
+                MSG_DIR_SAVED) printf "Verzeichnis in Konfiguration gespeichert: %s" "$@" ;;
+
+                MSG_DIR_SELECT_TITLE) printf "ClashFox-Installationsverzeichnis wählen" ;;
+                MSG_DEFAULT_DIR_CURRENT) printf "Aktuelles Standardverzeichnis: %s" "$@" ;;
+                MSG_USE_DEFAULT_DIR) printf "Standardverzeichnis verwenden? (y/n): " ;;
+                MSG_CUSTOM_DIR_PROMPT) printf "Benutzerdefiniertes Installationsverzeichnis eingeben: " ;;
+                MSG_DIR_SET) printf "ClashFox-Installationsverzeichnis gesetzt: %s" "$@" ;;
+                MSG_DIR_USE_DEFAULT) printf "Standard-Installationsverzeichnis verwenden: %s" "$@" ;;
+                MSG_DIR_INVALID_FALLBACK) printf "Ungültige Eingabe. Verwende Standard: %s" "$@" ;;
+                MSG_DIR_EXISTING) printf "Vorhandenes Installationsverzeichnis verwenden: %s" "$@" ;;
+
+                MSG_LOG_CHECKER_START) printf "[Init] Log-Checker wird gestartet..." ;;
+                MSG_LOG_CHECKER_OK) printf "Log-Checker gestartet. PID: %s" "$@" ;;
+                MSG_APP_CHECK) printf "[Init] Prüfe ClashFox-Installation..." ;;
+                MSG_APP_DIR_MISSING) printf "ClashFox-Verzeichnis nicht gefunden. Erstelle..." ;;
+                MSG_APP_DIR_TARGET) printf "  Zielverzeichnis: %s" "$@" ;;
+                MSG_APP_DIR_CREATED) printf "ClashFox-Verzeichnis erstellt: %s" "$@" ;;
+                MSG_APP_DIR_EXISTS) printf "ClashFox installiert: %s" "$@" ;;
+
+                MSG_MAIN_CHOICE) printf "Auswahl (0-8): " ;;
+                MSG_EXIT_THANKS) printf "[Beenden] Danke für die Nutzung von ClashFox Mihomo Kernel Manager" ;;
+
+                MSG_MIHOMO_CONFIG_NOT_FOUND) printf "Mihomo-Konfig: [Nicht gefunden %s]" "$@" ;;
+                MSG_MIHOMO_CONFIG_FOUND) printf "Mihomo-Konfig: [%s]" "$@" ;;
+                MSG_MIHOMO_STATUS_RUNNING) printf "%s: [%s]" "$@" ;;
+                MSG_MIHOMO_STATUS_STOPPED) printf "%s: [%s]" "$@" ;;
+                MSG_MIHOMO_KERNEL_LINE) printf "%s: [%s]" "$@" ;;
+
+                *) printf "%s" "$key" ;;
+            esac
+            ;;
+        ru)
+            case "$key" in
+                TAG_SUCCESS) printf "Успех" ;;
+                TAG_ERROR) printf "Ошибка" ;;
+                TAG_WARNING) printf "Подсказка" ;;
+                TAG_VERSION) printf "Версия" ;;
+                LABEL_FUNCTION) printf "Функция" ;;
+                LABEL_STATUS) printf "Статус" ;;
+                LABEL_HELP) printf "Справка" ;;
+                LABEL_INIT) printf "Инициализация" ;;
+                LABEL_STEP) printf "Шаг" ;;
+                LABEL_INFO) printf "Инфо" ;;
+                LABEL_CLEANUP) printf "Очистка" ;;
+                LABEL_OPTIONS) printf "Опции" ;;
+                LABEL_MENU) printf "Главное меню" ;;
+
+                MSG_MACOS_ONLY) printf "Этот скрипт поддерживает только macOS." ;;
+                MSG_WELCOME) printf "Добро пожаловать, %s, в %s" "$@" ;;
+                MSG_PRESS_ENTER) printf "Нажмите Enter для продолжения..." ;;
+                MSG_REQUIRE_SUDO_TITLE) printf "Для управления ядром требуются системные привилегии." ;;
+                MSG_REQUIRE_SUDO_DESC) printf "Примечание: операции старт/стоп/перезапуск/статус требуют sudo." ;;
+                MSG_REQUIRE_SUDO_PROMPT) printf "Авторизация: введите пароль macOS для продолжения." ;;
+                MSG_SUDO_OK) printf "Проверка прав прошла успешно." ;;
+                MSG_SUDO_FAIL) printf "Проверка пароля не удалась. Попробуйте снова." ;;
+
+                MSG_INIT_CHECK_DIRS) printf "[Init] Проверка структуры каталогов..." ;;
+                MSG_INIT_SET_PERMS) printf "[Init] Настройка прав каталогов..." ;;
+                MSG_NEED_ADMIN) printf "Для создания каталогов требуются права администратора." ;;
+                MSG_NO_PERMISSION) printf "Недостаточно прав для создания каталогов." ;;
+                MSG_CORE_DIR_CREATE) printf "Создание core-каталога: %s" "$@" ;;
+                MSG_CORE_DIR_EXISTS) printf "Core-каталог существует: %s" "$@" ;;
+                MSG_CONFIG_DIR_CREATE) printf "Создание config-каталога: %s" "$@" ;;
+                MSG_CONFIG_DIR_EXISTS) printf "Config-каталог существует: %s" "$@" ;;
+                MSG_DATA_DIR_CREATE) printf "Создание data-каталога: %s" "$@" ;;
+                MSG_DATA_DIR_EXISTS) printf "Data-каталог существует: %s" "$@" ;;
+                MSG_LOG_DIR_CREATE) printf "Создание log-каталога: %s" "$@" ;;
+                MSG_LOG_DIR_EXISTS) printf "Log-каталог существует: %s" "$@" ;;
+                MSG_RUNTIME_DIR_CREATE) printf "Создание runtime-каталога: %s" "$@" ;;
+                MSG_RUNTIME_DIR_EXISTS) printf "Runtime-каталог существует: %s" "$@" ;;
+                MSG_DIRS_PERMS_OK) printf "Права каталогов установлены." ;;
+
+                MSG_CORE_DIR_MISSING_CREATE) printf "Core-каталог отсутствует. Создаю структуру..." ;;
+                MSG_DIR_CREATE_FAIL) printf "Не удалось создать структуру каталогов." ;;
+                MSG_CORE_DIR_ENTER_FAIL) printf "Не удалось войти в core-каталог." ;;
+
+                MSG_STATUS_STOPPED) printf "Остановлено" ;;
+                MSG_STATUS_RUNNING) printf "Запущено" ;;
+                MSG_STATUS_LABEL) printf "Статус Mihomo" ;;
+                MSG_KERNEL_LABEL) printf "Ядро Mihomo" ;;
+                MSG_CONFIG_LABEL) printf "Конфиг Mihomo" ;;
+                MSG_CONFIG_NOT_FOUND) printf "Не найдено: %s" "$@" ;;
+                MSG_STATUS_SECTION) printf "• Статус:" ;;
+                MSG_KERNEL_FILES_SECTION) printf "• Информация о файле ядра:" ;;
+                MSG_BACKUP_SECTION) printf "• Информация о резервных копиях:" ;;
+                MSG_KERNEL_FILE_OK) printf "✓ Файл ядра существует" ;;
+                MSG_KERNEL_FILE_NOEXEC) printf "✗ Файл ядра не исполняемый" ;;
+                MSG_KERNEL_FILE_MISSING) printf "✗ Файл ядра не найден" ;;
+                MSG_KERNEL_VERSION_INFO) printf "Версия: %s" "$@" ;;
+                MSG_KERNEL_DISPLAY_NAME) printf "Отображаемое имя: %s" "$@" ;;
+                MSG_KERNEL_DISPLAY_NAME_PARSE_FAIL) printf "Отображаемое имя: %s (ошибка разбора)" "$@" ;;
+                MSG_BACKUP_FOUND) printf "✓ Резервная копия найдена" ;;
+                MSG_BACKUP_LATEST) printf "Последняя резервная копия: %s" "$@" ;;
+                MSG_BACKUP_VERSION) printf "Версия резервной копии: %s" "$@" ;;
+                MSG_BACKUP_VERSION_UNKNOWN) printf "Версия резервной копии: неизвестна" ;;
+                MSG_BACKUP_TIME) printf "Время резервной копии: %s" "$@" ;;
+                MSG_BACKUP_NONE) printf "⚠️  Резервные копии не найдены" ;;
+
+                MSG_LIST_BACKUPS_TITLE) printf "Список всех резервных ядер" ;;
+                MSG_NO_BACKUPS) printf "Файлы резервных копий отсутствуют" ;;
+                MSG_BACKUP_LIST_TITLE) printf "[Инфо] Доступные резервные копии (новые сверху):" ;;
+                MSG_BACKUP_LIST_COLUMNS) printf "№ | Версия | Время резервной копии" ;;
+                MSG_BACKUP_TOTAL) printf "Всего резервных копий: %s" "$@" ;;
+
+                MSG_SWITCH_TITLE) printf "Переключить версию ядра" ;;
+                MSG_SWITCH_PROMPT) printf "Введите номер резервной копии (Enter для возврата): " ;;
+                MSG_INVALID_NUMBER) printf "Введите корректное число." ;;
+                MSG_BACKUP_NO_MATCH) printf "Подходящий номер резервной копии не найден." ;;
+                MSG_SWITCH_START) printf "[Шаг] Начало переключения ядра..." ;;
+                MSG_BACKUP_SELECTED) printf "[Инфо] Выбранная резервная копия: %s" "$@" ;;
+                MSG_CURRENT_KERNEL_VERSION) printf "[Инфо] Текущая версия ядра: %s" "$@" ;;
+                MSG_CURRENT_KERNEL_MISSING) printf "[Инфо] Текущее ядро не найдено" ;;
+                MSG_SWITCH_CONFIRM) printf "Подтвердить переключение на эту версию? (y/n): " ;;
+                MSG_OP_CANCELLED) printf "Операция отменена." ;;
+                MSG_BACKUP_CURRENT_KERNEL) printf "[Шаг] Резервная копия текущего ядра -> %s" "$@" ;;
+                MSG_KERNEL_REPLACED) printf "[Шаг] Ядро заменено на: %s" "$@" ;;
+                MSG_TEMP_BACKUP_REMOVED) printf "[Шаг] Временная резервная копия удалена: %s" "$@" ;;
+                MSG_SWITCH_DONE) printf "[Готово] Переключение ядра завершено" ;;
+
+                MSG_LIST_BACKUPS_SIMPLE_TITLE) printf "[Инфо] Доступные резервные копии:" ;;
+                MSG_INSTALL_TITLE) printf "Установить/Обновить ядро Mihomo" ;;
+                MSG_SELECT_GITHUB_USER) printf "Выберите пользователя GitHub для загрузки:" ;;
+                MSG_SELECT_USER_PROMPT) printf "Выберите пользователя (по умолчанию 1): " ;;
+                MSG_SELECTED_GITHUB_USER) printf "[Инфо] Выбранный пользователь GitHub: %s" "$@" ;;
+                MSG_GET_VERSION_INFO) printf "[Шаг] Получение информации о версии..." ;;
+                MSG_VERSION_INFO_FAIL) printf "Не удалось получить информацию о версии или версия отсутствует." ;;
+                MSG_VERSION_INFO) printf "[Инфо] Версия: %s" "$@" ;;
+                MSG_ARCH_UNSUPPORTED) printf "Неподдерживаемая архитектура: %s" "$@" ;;
+                MSG_ARCH_DETECTED) printf "[Инфо] Архитектура: %s" "$@" ;;
+                MSG_DOWNLOAD_INFO) printf "[Шаг] Информация о загрузке:" ;;
+                MSG_DOWNLOAD_URL) printf "  URL загрузки: %s" "$@" ;;
+                MSG_VERSION_LABEL) printf "  Версия: %s" "$@" ;;
+                MSG_DOWNLOAD_CONFIRM) printf "Скачать и установить эту версию? (y/n): " ;;
+                MSG_DOWNLOAD_START) printf "[Шаг] Загрузка ядра (может занять несколько минут)..." ;;
+                MSG_DOWNLOAD_RETRY) printf "Ошибка загрузки. Повтор %s/%s..." "$@" ;;
+                MSG_DOWNLOAD_OK) printf "Загрузка завершена" ;;
+                MSG_EXTRACT_START) printf "[Шаг] Распаковка ядра..." ;;
+                MSG_BACKUP_NEW_KERNEL) printf "[Шаг] Резервная копия нового ядра -> %s" "$@" ;;
+                MSG_INSTALL_DONE) printf "[Готово] Установка ядра выполнена" ;;
+                MSG_EXTRACT_FAIL) printf "Распаковка не удалась." ;;
+                MSG_DOWNLOAD_FAIL) printf "Загрузка не удалась после %s попыток." "$@" ;;
+
+                MSG_VERSION_PARSE_FAIL) printf "Ошибка разбора" ;;
+                MSG_NOT_INSTALLED) printf "Не установлено" ;;
+
+                MSG_START_TITLE) printf "Запустить ядро Mihomo" ;;
+                MSG_KERNEL_RUNNING) printf "Ядро Mihomo уже запущено" ;;
+                MSG_START_PRECHECK) printf "[Шаг] Проверка перед запуском..." ;;
+                MSG_KERNEL_NOT_FOUND) printf "Файл ядра Mihomo не найден" ;;
+                MSG_KERNEL_NOT_EXEC) printf "Файл ядра Mihomo не исполняемый" ;;
+                MSG_ADD_EXEC) printf "[Шаг] Добавление права на выполнение..." ;;
+                MSG_ADD_EXEC_FAIL) printf "Не удалось добавить право на выполнение" ;;
+                MSG_CONFIG_DEFAULT_MISSING) printf "Файл конфигурации по умолчанию не найден: %s" "$@" ;;
+                MSG_CONFIG_SCAN) printf "[Шаг] Поиск других файлов конфигурации..." ;;
+                MSG_CONFIG_NONE) printf "В каталоге конфигурации нет файлов." ;;
+                MSG_CONFIG_PUT_HINT) printf "Поместите файл конфигурации в %s" "$@" ;;
+                MSG_CONFIG_AVAILABLE) printf "[Инфо] Доступные файлы конфигурации:" ;;
+                MSG_CONFIG_LIST_COLUMNS) printf "№ | Путь к файлу конфигурации" ;;
+                MSG_CONFIG_SELECT_PROMPT) printf "Выберите номер файла конфигурации (0 для отмены): " ;;
+                MSG_CONFIG_SELECTED) printf "Выбранный файл конфигурации: %s" "$@" ;;
+                MSG_CONFIG_INVALID) printf "Неверный выбор." ;;
+                MSG_CONFIG_READ_FAIL) printf "Файл конфигурации недоступен для чтения: %s" "$@" ;;
+                MSG_CONFIG_PERM_HINT) printf "Проверьте права файла конфигурации." ;;
+                MSG_CONFIG_EMPTY) printf "Файл конфигурации пуст: %s" "$@" ;;
+                MSG_CONFIG_EMPTY_HINT) printf "Убедитесь, что файл конфигурации содержит корректные данные." ;;
+                MSG_CONFIG_WILL_USE) printf "Используемый файл конфигурации: %s" "$@" ;;
+                MSG_START_PROCESS) printf "[Шаг] Запуск процесса ядра..." ;;
+                MSG_START_COMMAND) printf "Команда запуска: %s" "$@" ;;
+                MSG_PID_WRITTEN) printf "PID записан в: %s" "$@" ;;
+                MSG_KERNEL_STARTED) printf "Ядро Mihomo запущено" ;;
+                MSG_PROCESS_ID) printf "ID процесса: %s" "$@" ;;
+                MSG_KERNEL_START_FAIL) printf "Не удалось запустить ядро Mihomo" ;;
+
+                MSG_STOP_TITLE) printf "Остановить ядро Mihomo" ;;
+                MSG_KERNEL_NOT_RUNNING) printf "Ядро Mihomo не запущено" ;;
+                MSG_STOPPING_KERNEL) printf "[Шаг] Остановка ядра Mihomo..." ;;
+                MSG_PIDS_FOUND) printf "Найдены ID процессов: %s" "$@" ;;
+                MSG_STOPPING_PROCESS) printf "[Шаг] Остановка процесса %s..." "$@" ;;
+                MSG_FORCE_STOPPING) printf "Принудительная остановка оставшихся процессов..." ;;
+                MSG_KERNEL_STOP_FAIL) printf "Не удалось остановить ядро Mihomo" ;;
+                MSG_KERNEL_STOP_HINT) printf "Попробуйте остановить ядро через Activity Monitor." ;;
+                MSG_KERNEL_STOPPED) printf "Ядро Mihomo остановлено" ;;
+                MSG_PROCESS_NOT_RUNNING) printf "Процесс ядра Mihomo не запущен" ;;
+                MSG_PID_CLEANED) printf "PID-файл удалён: %s" "$@" ;;
+
+                MSG_RESTART_TITLE) printf "Перезапустить ядро Mihomo" ;;
+                MSG_KERNEL_MENU_TITLE) printf "Управление ядром" ;;
+                MSG_KERNEL_MENU_PROMPT) printf "Выберите действие ядра:" ;;
+                MSG_MENU_START) printf "1) Запустить ядро" ;;
+                MSG_MENU_STOP) printf "2) Остановить ядро" ;;
+                MSG_MENU_RESTART) printf "3) Перезапустить ядро" ;;
+                MSG_MENU_BACK) printf "0) Назад в главное меню" ;;
+                MSG_MENU_CHOICE_0_3) printf "Выбор (0-3): " ;;
+                MSG_MENU_INVALID) printf "Неверный выбор. Повторите." ;;
+
+                MSG_LOGS_TITLE) printf "Просмотр логов ядра Mihomo" ;;
+                MSG_LOG_FILE_MISSING) printf "Файл логов не найден: %s" "$@" ;;
+                MSG_LOG_FILE_HINT) printf "Сначала запустите ядро, чтобы создать логи." ;;
+                MSG_LOG_FILE_PATH) printf "[Инфо] Путь к файлу логов: %s" "$@" ;;
+                MSG_LOG_FILE_SIZE) printf "[Инфо] Размер логов: %s" "$@" ;;
+                MSG_LOG_FILE_LINES) printf "[Инфо] Строк логов: %s" "$@" ;;
+                MSG_LOG_VIEW_OPTIONS) printf "[Опции] Как просматривать логи:" ;;
+                MSG_LOG_OPTION_TAIL) printf "1) Показать последние 50 строк" ;;
+                MSG_LOG_OPTION_FOLLOW) printf "2) Следить за логами (Ctrl+C для выхода)" ;;
+                MSG_LOG_OPTION_LESS) printf "3) Просмотр полного лога через less (q для выхода)" ;;
+                MSG_LOG_OPTION_BACK) printf "0) Назад в главное меню" ;;
+                MSG_LOG_TAIL_HEADER) printf "[Инфо] Последние 50 строк:" ;;
+                MSG_LOG_FOLLOW_HEADER) printf "[Инфо] Просмотр логов в реальном времени (Ctrl+C для выхода):" ;;
+                MSG_LOG_LESS_HEADER) printf "[Инфо] Просмотр через less (q для выхода):" ;;
+
+                MSG_HELP_TITLE) printf "Справка" ;;
+                MSG_HELP_ARGS) printf "Аргументы командной строки:" ;;
+                MSG_HELP_DIR_ARG) printf "  -d|--directory <path>  Каталог установки ClashFox" ;;
+                MSG_HELP_LANG_ARG) printf "  -l|--lang <zh|en|ja|ko|fr|de|ru|auto>  Язык интерфейса" ;;
+                MSG_HELP_STATUS) printf "  status                 Показать текущий статус ядра" ;;
+                MSG_HELP_LIST) printf "  list                   Список всех резервных копий" ;;
+                MSG_HELP_SWITCH) printf "  switch                 Переключить версию ядра" ;;
+                MSG_HELP_LOGS) printf "  logs|log               Просмотр логов ядра" ;;
+                MSG_HELP_CLEAN) printf "  clean|clear            Очистить логи" ;;
+                MSG_HELP_HELP) printf "  help|-h                Показать справку" ;;
+                MSG_HELP_VERSION) printf "  version|-v             Показать версию" ;;
+                MSG_HELP_MENU) printf "Интерактивное меню:" ;;
+                MSG_MENU_INSTALL) printf "1) Установить/Обновить ядро Mihomo" ;;
+                MSG_MENU_CONTROL) printf "2) Управление ядром (старт/стоп/перезапуск)" ;;
+                MSG_MENU_STATUS) printf "3) Показать текущий статус" ;;
+                MSG_MENU_SWITCH) printf "4) Переключить версию ядра" ;;
+                MSG_MENU_LIST) printf "5) Список всех резервных копий" ;;
+                MSG_MENU_LOGS) printf "6) Просмотр логов ядра" ;;
+                MSG_MENU_CLEAN) printf "7) Очистить логи" ;;
+                MSG_MENU_HELP) printf "8) Показать справку" ;;
+                MSG_MENU_EXIT) printf "0) Выход" ;;
+                MSG_HELP_NOTE) printf "Этот инструмент управляет версиями ядра и его состоянием (старт/стоп/перезапуск)." ;;
+
+                MSG_CLEAN_TITLE) printf "Очистка старых логов" ;;
+                MSG_CLEAN_CURRENT_LOG) printf "[Инфо] Текущий лог: %s" "$@" ;;
+                MSG_CLEAN_LOG_SIZE) printf "[Инфо] Размер лога: %s" "$@" ;;
+                MSG_CLEAN_OLD_COUNT) printf "[Инфо] Кол-во старых логов: %s" "$@" ;;
+                MSG_CLEAN_OLD_SIZE) printf "[Инфо] Общий размер старых логов: %s" "$@" ;;
+                MSG_CLEAN_OPTIONS) printf "[Опции очистки]" ;;
+                MSG_CLEAN_ALL) printf "1) Удалить все старые логи" ;;
+                MSG_CLEAN_7D) printf "2) Оставить 7 дней, удалить более старые" ;;
+                MSG_CLEAN_30D) printf "3) Оставить 30 дней, удалить более старые" ;;
+                MSG_CLEAN_CANCEL) printf "0) Отмена" ;;
+                MSG_CLEAN_PROMPT) printf "Выберите способ (0-3): " ;;
+                MSG_CLEAN_DONE_ALL) printf "Все старые логи удалены" ;;
+                MSG_CLEAN_DONE_7D) printf "Логи старше 7 дней удалены" ;;
+                MSG_CLEAN_DONE_30D) printf "Логи старше 30 дней удалены" ;;
+                MSG_CLEAN_CANCELLED) printf "Очистка отменена" ;;
+                MSG_CLEAN_INVALID) printf "Неверный выбор" ;;
+
+                MSG_LOG_ROTATE_DATE) printf "Ротация логов по дате: %s" "$@" ;;
+                MSG_LOG_ROTATE_SIZE) printf "Ротация логов по размеру: %s" "$@" ;;
+
+                MSG_MAIN_STATUS_TITLE) printf "Текущая информация о ядре" ;;
+                MSG_MAIN_MENU_TITLE) printf "Главное меню" ;;
+                MSG_KERNEL_STATUS_CHECK) printf "Проверка статуса ядра" ;;
+                MSG_MAIN_PROMPT) printf "Выберите действие:" ;;
+                MSG_MAIN_LINE_1) printf "  1) Установить/Обновить ядро Mihomo         2) Управление ядром (старт/стоп/перезапуск)" ;;
+                MSG_MAIN_LINE_2) printf "  3) Показать текущий статус                 4) Переключить версию ядра" ;;
+                MSG_MAIN_LINE_3) printf "  5) Список всех резервных копий             6) Просмотр логов ядра" ;;
+                MSG_MAIN_LINE_4) printf "  7) Очистить логи                           8) Показать справку" ;;
+                MSG_MAIN_LINE_5) printf "  0) Выход" ;;
+
+                MSG_CLEANUP_STOPPING) printf "[Очистка] Остановка лог-чекера (PID: %s)..." "$@" ;;
+                MSG_CLEANUP_FORCE) printf "[Очистка] Принудительная остановка лог-чекера..." ;;
+                MSG_CLEANUP_FAIL) printf "[Очистка] Не удалось остановить лог-чекер (PID: %s)" "$@" ;;
+                MSG_CLEANUP_OK) printf "Лог-чекер остановлен" ;;
+                MSG_EXIT_ABNORMAL) printf "[Выход] Программа завершилась неожиданно" ;;
+
+                MSG_ARG_DIR_REQUIRED) printf "-d/--directory требует путь к каталогу." ;;
+                MSG_ARG_LANG_REQUIRED) printf "-l/--lang требует язык (zh|en|ja|ko|fr|de|ru|auto)." ;;
+                MSG_ARG_LANG_INVALID) printf "Недопустимый язык: %s (поддерживаются: zh|en|ja|ko|fr|de|ru|auto)" "$@" ;;
+                MSG_UNKNOWN_COMMAND) printf "Неизвестная команда: %s" "$@" ;;
+                MSG_AVAILABLE_COMMANDS) printf "Доступные команды: status, list, switch, logs, clean, help, version" ;;
+                MSG_AVAILABLE_ARGS) printf "Доступные параметры: -d/--directory <path> - каталог установки ClashFox; -l/--lang <zh|en|ja|ko|fr|de|ru|auto> - язык UI" ;;
+
+                MSG_SAVED_DIR_LOADED) printf "Сохранённый каталог загружен: %s" "$@" ;;
+                MSG_SAVED_DIR_NOT_FOUND) printf "Сохранённый каталог не найден. Используется по умолчанию: %s" "$@" ;;
+                MSG_DIR_SAVED) printf "Каталог сохранён в конфиг: %s" "$@" ;;
+
+                MSG_DIR_SELECT_TITLE) printf "Выберите каталог установки ClashFox" ;;
+                MSG_DEFAULT_DIR_CURRENT) printf "Текущий каталог по умолчанию: %s" "$@" ;;
+                MSG_USE_DEFAULT_DIR) printf "Использовать каталог по умолчанию? (y/n): " ;;
+                MSG_CUSTOM_DIR_PROMPT) printf "Введите пользовательский каталог установки: " ;;
+                MSG_DIR_SET) printf "Каталог установки ClashFox установлен: %s" "$@" ;;
+                MSG_DIR_USE_DEFAULT) printf "Используется каталог по умолчанию: %s" "$@" ;;
+                MSG_DIR_INVALID_FALLBACK) printf "Неверный ввод. Используется каталог по умолчанию: %s" "$@" ;;
+                MSG_DIR_EXISTING) printf "Используется существующий каталог установки: %s" "$@" ;;
+
+                MSG_LOG_CHECKER_START) printf "[Init] Запуск лог-чекера..." ;;
+                MSG_LOG_CHECKER_OK) printf "Лог-чекер запущен. PID: %s" "$@" ;;
+                MSG_APP_CHECK) printf "[Init] Проверка установки ClashFox..." ;;
+                MSG_APP_DIR_MISSING) printf "Каталог ClashFox не найден. Создание..." ;;
+                MSG_APP_DIR_TARGET) printf "  Целевой каталог: %s" "$@" ;;
+                MSG_APP_DIR_CREATED) printf "Каталог ClashFox создан: %s" "$@" ;;
+                MSG_APP_DIR_EXISTS) printf "ClashFox установлен: %s" "$@" ;;
+
+                MSG_MAIN_CHOICE) printf "Выбор (0-8): " ;;
+                MSG_EXIT_THANKS) printf "[Выход] Спасибо за использование ClashFox Mihomo Kernel Manager" ;;
+
+                MSG_MIHOMO_CONFIG_NOT_FOUND) printf "Конфиг Mihomo: [Не найден %s]" "$@" ;;
+                MSG_MIHOMO_CONFIG_FOUND) printf "Конфиг Mihomo: [%s]" "$@" ;;
                 MSG_MIHOMO_STATUS_RUNNING) printf "%s: [%s]" "$@" ;;
                 MSG_MIHOMO_STATUS_STOPPED) printf "%s: [%s]" "$@" ;;
                 MSG_MIHOMO_KERNEL_LINE) printf "%s: [%s]" "$@" ;;
@@ -1980,7 +3395,7 @@ parse_arguments() {
                 shift
                 if [ -n "$1" ]; then
                     case "$1" in
-                        zh|en|auto)
+                        zh|en|ja|ko|fr|de|ru|auto)
                             CLASHFOX_LANG="$1"
                             ;;
                         *)
@@ -1998,7 +3413,7 @@ parse_arguments() {
                 LANG_VALUE="${1#*=}"
                 if [ -n "$LANG_VALUE" ]; then
                     case "$LANG_VALUE" in
-                        zh|en|auto)
+                        zh|en|ja|ko|fr|de|ru|auto)
                             CLASHFOX_LANG="$LANG_VALUE"
                             ;;
                         *)
