@@ -2041,7 +2041,7 @@ tr_msg() {
 }
 
 # ClashFox 默认目录 - 默认值，可通过命令行参数或交互方式修改
-CLASHFOX_DEFAULT_DIR="/Applications/ClashFox.app"
+CLASHFOX_DEFAULT_DIR="$HOME/ClashFox"
 CLASHFOX_DIR="$CLASHFOX_DEFAULT_DIR"
 
 # ClashFox 子目录定义
@@ -3256,12 +3256,14 @@ clean_logs() {
     show_separator
 
     LOG_FILE="$CLASHFOX_LOG_DIR/clashfox.log"
-    LOG_BACKUPS="$CLASHFOX_LOG_DIR/clashfox.log.*.gz"
+    LOG_BACKUPS_PATTERN="clashfox.log.*.log"
+    LOG_BACKUPS_COUNT=$(find "$CLASHFOX_LOG_DIR" -maxdepth 1 -type f -name "$LOG_BACKUPS_PATTERN" 2>/dev/null | wc -l | tr -d ' ')
+    LOG_BACKUPS_SIZE=$(find "$CLASHFOX_LOG_DIR" -maxdepth 1 -type f -name "$LOG_BACKUPS_PATTERN" -exec du -k {} + 2>/dev/null | awk '{sum += $1} END {if (sum > 0) printf "%.1fM", sum/1024; else print "0B"}')
 
     log_fmt "${BLUE}$(tr_msg MSG_CLEAN_CURRENT_LOG "$LOG_FILE")"
     log_fmt "${BLUE}$(tr_msg MSG_CLEAN_LOG_SIZE "$(du -h "$LOG_FILE" 2>/dev/null | cut -f1)")"
-    log_fmt "${BLUE}$(tr_msg MSG_CLEAN_OLD_COUNT "$(ls -l $LOG_BACKUPS 2>/dev/null | wc -l)")"
-    log_fmt "${BLUE}$(tr_msg MSG_CLEAN_OLD_SIZE "$(du -ch $LOG_BACKUPS 2>/dev/null | tail -n 1 | cut -f1)")"
+    log_fmt "${BLUE}$(tr_msg MSG_CLEAN_OLD_COUNT "$LOG_BACKUPS_COUNT")"
+    log_fmt "${BLUE}$(tr_msg MSG_CLEAN_OLD_SIZE "$LOG_BACKUPS_SIZE")"
     log_blank
 
     log_fmt "${GREEN}$(tr_msg MSG_CLEAN_OPTIONS)${NC}"
@@ -3275,17 +3277,17 @@ clean_logs() {
 
     case "$CHOICE" in
         1)
-            rm -f $LOG_BACKUPS
+            find "$CLASHFOX_LOG_DIR" -maxdepth 1 -type f -name "$LOG_BACKUPS_PATTERN" -delete
             log_success "$(tr_msg MSG_CLEAN_DONE_ALL)"
             ;;
         2)
             # 保留最近7天的日志
-            find "$CLASHFOX_LOG_DIR" -name "clashfox.log.*.gz" -mtime +7 -delete
+            find "$CLASHFOX_LOG_DIR" -maxdepth 1 -type f -name "$LOG_BACKUPS_PATTERN" -mtime +7 -delete
             log_success "$(tr_msg MSG_CLEAN_DONE_7D)"
             ;;
         3)
             # 保留最近30天的日志
-            find "$CLASHFOX_LOG_DIR" -name "clashfox.log.*.gz" -mtime +30 -delete
+            find "$CLASHFOX_LOG_DIR" -maxdepth 1 -type f -name "$LOG_BACKUPS_PATTERN" -mtime +30 -delete
             log_success "$(tr_msg MSG_CLEAN_DONE_30D)"
             ;;
         0)
@@ -3307,6 +3309,7 @@ rotate_logs() {
     MAX_SIZE=10  # MB
     BACKUP_DIR="$CLASHFOX_LOG_DIR"
     CURRENT_DATE=$(date +%Y%m%d)
+    NOW_STAMP=$(date +%Y%m%d_%H%M%S)
 
     if [ ! -f "$LOG_FILE" ]; then
         return
@@ -3318,16 +3321,9 @@ rotate_logs() {
 
         # 如果日志是昨天或更早的，进行日期备份
         if [ "$LOG_MODIFY_DATE" != "$CURRENT_DATE" ]; then
-            # 创建按日期命名的备份文件
-            DATE_BACKUP_FILE="$BACKUP_DIR/clashfox.log.$LOG_MODIFY_DATE.gz"
-
-            # 如果备份文件已存在，添加时间戳避免覆盖
-            if [ -f "$DATE_BACKUP_FILE" ]; then
-                DATE_BACKUP_FILE="$BACKUP_DIR/clashfox.log.$LOG_MODIFY_DATE.$(date +%H%M%S).gz"
-            fi
-
-            # 压缩并备份旧日志
-            gzip -c "$LOG_FILE" > "$DATE_BACKUP_FILE"
+            # 备份旧日志，不压缩，命名格式：clashfox.log.20260212_214914.log
+            DATE_BACKUP_FILE="$BACKUP_DIR/clashfox.log.${NOW_STAMP}.log"
+            cp "$LOG_FILE" "$DATE_BACKUP_FILE"
             # 清空当前日志
             > "$LOG_FILE"
             log_warning "$(tr_msg MSG_LOG_ROTATE_DATE "$DATE_BACKUP_FILE")"
@@ -3337,9 +3333,9 @@ rotate_logs() {
     # 保留按大小滚动的功能
     LOG_SIZE=$(du -m "$LOG_FILE" | cut -f1)
     if [ "$LOG_SIZE" -ge "$MAX_SIZE" ]; then
-        # 创建带时间戳的备份文件
-        SIZE_BACKUP_FILE="$BACKUP_DIR/clashfox.log.$(date +%Y%m%d_%H%M%S).gz"
-        gzip -c "$LOG_FILE" > "$SIZE_BACKUP_FILE"
+        # 备份旧日志，不压缩，命名格式：clashfox.log.20260212_214914.log
+        SIZE_BACKUP_FILE="$BACKUP_DIR/clashfox.log.$(date +%Y%m%d_%H%M%S).log"
+        cp "$LOG_FILE" "$SIZE_BACKUP_FILE"
         # 清空当前日志
         > "$LOG_FILE"
         log_warning "$(tr_msg MSG_LOG_ROTATE_SIZE "$SIZE_BACKUP_FILE")"
